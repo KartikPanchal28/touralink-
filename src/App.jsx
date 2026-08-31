@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import AuthModal from './components/Auth/AuthModal';
 import TravelerHome from './pages/TravelerHome';
 import DriverPartnerHome from './pages/DriverPartnerHome';
@@ -10,15 +10,54 @@ const BACKGROUND_VIDEO = '/videos/cape-goa-goa-indien-naturfotografie-verbl-ffen
 
 export default function App() {
   const [currentUser, setCurrentUser] = useState(null);
-  const [currentView, setCurrentView] = useState('home'); // 'home' | 'fleet' | 'drivers'
+
+  // Derive initial view from URL Hash
+  const getInitialView = () => {
+    const hash = window.location.hash.replace('#', '').trim();
+    if (['fleet', 'drivers', 'home'].includes(hash)) {
+      return hash;
+    }
+    return 'home';
+  };
+
+  const [currentView, setCurrentView] = useState(getInitialView);
+
+  // Sync state with browser native Back & Forward buttons (popstate & hashchange)
+  useEffect(() => {
+    const handleLocationChange = () => {
+      const hash = window.location.hash.replace('#', '').trim();
+      if (['fleet', 'drivers', 'home'].includes(hash)) {
+        setCurrentView(hash);
+      } else if (!hash) {
+        setCurrentView('home');
+      }
+    };
+
+    window.addEventListener('popstate', handleLocationChange);
+    window.addEventListener('hashchange', handleLocationChange);
+
+    return () => {
+      window.removeEventListener('popstate', handleLocationChange);
+      window.removeEventListener('hashchange', handleLocationChange);
+    };
+  }, []);
+
+  // Safe navigation function that pushes to browser history
+  const navigateTo = (view) => {
+    setCurrentView(view);
+    if (window.location.hash !== `#${view}`) {
+      window.location.hash = view;
+    }
+  };
 
   const handleLoginSuccess = (userData) => {
     setCurrentUser(userData);
-    setCurrentView('home');
+    navigateTo('home');
   };
 
   const handleLogout = () => {
     setCurrentUser(null);
+    window.location.hash = '';
   };
 
   return (
@@ -45,15 +84,15 @@ export default function App() {
         <DriversPage 
           user={currentUser} 
           onLogout={handleLogout} 
-          onBackToHome={() => setCurrentView('home')} 
-          onNavigateToFleet={() => setCurrentView('fleet')}
+          onBackToHome={() => navigateTo('home')} 
+          onNavigateToFleet={() => navigateTo('fleet')}
         />
       ) : currentView === 'fleet' ? (
         <FleetPage 
           user={currentUser} 
           onLogout={handleLogout} 
-          onBackToHome={() => setCurrentView('home')} 
-          onNavigateToDrivers={() => setCurrentView('drivers')}
+          onBackToHome={() => navigateTo('home')} 
+          onNavigateToDrivers={() => navigateTo('drivers')}
         />
       ) : currentUser?.role === 'driver_partner' && currentUser?.partnerType === 'fleet_partner' ? (
         <FleetPartnerHome
@@ -64,15 +103,15 @@ export default function App() {
         <DriverPartnerHome
           user={currentUser}
           onLogout={handleLogout}
-          onNavigateToFleet={() => setCurrentView('fleet')}
-          onNavigateToDrivers={() => setCurrentView('drivers')}
+          onNavigateToFleet={() => navigateTo('fleet')}
+          onNavigateToDrivers={() => navigateTo('drivers')}
         />
       ) : (
         <TravelerHome 
           user={currentUser} 
           onLogout={handleLogout} 
-          onNavigateToFleet={() => setCurrentView('fleet')}
-          onNavigateToDrivers={() => setCurrentView('drivers')}
+          onNavigateToFleet={() => navigateTo('fleet')}
+          onNavigateToDrivers={() => navigateTo('drivers')}
         />
       )}
     </div>
