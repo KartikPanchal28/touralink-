@@ -15,8 +15,12 @@ import {
   IndianRupee,
   Navigation,
   Sparkles,
-  ArrowRight
+  ArrowRight,
+  Camera,
+  Eye,
+  Images
 } from 'lucide-react';
+import FleetGalleryModal from '../components/Fleet/FleetGalleryModal';
 
 const BACKGROUND_VIDEO = '/videos/cape-goa-goa-indien-naturfotografie-verbl-ffende-natur.mp4';
 
@@ -28,6 +32,7 @@ export default function TravelerHome({
 }) {
   // Rental mode tab: 'car_driver' | 'driver_only'
   const [activeTab, setActiveTab] = useState('car_driver');
+  const [isGalleryOpen, setIsGalleryOpen] = useState(false);
 
   return (
     <div className="relative min-h-screen font-sans text-slate-900 selection:bg-brand-500 selection:text-white">
@@ -175,8 +180,15 @@ export default function TravelerHome({
                   : 'border-slate-200 bg-white/90 hover:bg-white hover:border-slate-300 shadow-xl shadow-slate-200/50'
                   } backdrop-blur-xl`}
               >
-                {/* Top Image Preview */}
-                <div className="relative h-56 sm:h-64 w-full overflow-hidden">
+                {/* Top Interactive Image Preview with Photo Gallery Trigger */}
+                <div 
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setIsGalleryOpen(true);
+                  }}
+                  className="relative h-56 sm:h-64 w-full overflow-hidden cursor-pointer"
+                  title="Click to browse 8+ verified fleet car photos"
+                >
                   <img
                     src="/images/car-fleet-images.jpg"
                     alt="Car + Verified Driver"
@@ -190,21 +202,27 @@ export default function TravelerHome({
                     <span>Outstation & City Cabs</span>
                   </div>
 
-                  {/* Active Indicator Badge */}
-                  {activeTab === 'car_driver' && (
-                    <div className="absolute top-4 right-4 px-3 py-1 rounded-full bg-brand-600 text-white text-[11px] font-black uppercase tracking-wider shadow-md">
-                      Selected
-                    </div>
-                  )}
+                  {/* Interactive Fleet Photo Gallery Trigger Badge */}
+                  <div className="absolute top-4 right-4 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-950/80 hover:bg-slate-950 text-white backdrop-blur-md border border-white/20 text-xs font-extrabold shadow-lg transition-transform group-hover:scale-105">
+                    <Images className="w-3.5 h-3.5 text-brand-400" />
+                    <span>8+ Fleet Photos</span>
+                  </div>
 
                   {/* Bottom Image Headline */}
-                  <div className="absolute bottom-4 left-4 right-4 text-white">
-                    <div className="text-xl font-black font-display drop-shadow-md">
-                      Car + Verified Driver
+                  <div className="absolute bottom-4 left-4 right-4 text-white flex items-end justify-between">
+                    <div>
+                      <div className="text-xl font-black font-display drop-shadow-md">
+                        Car + Verified Driver
+                      </div>
+                      <div className="text-xs text-slate-200 font-medium drop-shadow-sm">
+                        Innova Crysta • Ertiga • Dzire • WagonR • SUVs
+                      </div>
                     </div>
-                    <div className="text-xs text-slate-200 font-medium drop-shadow-sm">
-                      Innova Crysta • Ertiga • Dzire • WagonR • SUVs
-                    </div>
+
+                    <span className="text-[11px] font-bold text-brand-300 bg-black/40 px-2 py-0.5 rounded-md backdrop-blur-xs flex items-center gap-1">
+                      <Eye className="w-3 h-3" />
+                      <span>Click to view photos</span>
+                    </span>
                   </div>
                 </div>
 
@@ -214,14 +232,28 @@ export default function TravelerHome({
                     Book complete AC vehicles with experienced commercial chauffeurs. Fixed transparent rates with zero hidden charges for one-way or round trips across Maharashtra, Goa, Gujarat & Karnataka.
                   </p>
 
-                  {/* Action Button */}
-                  <button
-                    onClick={onNavigateToFleet}
-                    className="w-full py-3.5 px-6 rounded-2xl font-black text-sm text-white bg-slate-950 hover:bg-slate-850 active:scale-[0.98] transition-all flex items-center justify-center gap-2 shadow-lg shadow-slate-950/20 group cursor-pointer"
-                  >
-                    <span>Select Car + Driver</span>
-                    <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
-                  </button>
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setIsGalleryOpen(true);
+                      }}
+                      className="py-3.5 px-4 rounded-2xl font-black text-xs text-slate-800 bg-slate-100 hover:bg-slate-200 active:scale-[0.98] transition-all flex items-center justify-center gap-1.5 border border-slate-200 cursor-pointer"
+                    >
+                      <Images className="w-4 h-4 text-brand-600" />
+                      <span>View Car Photos</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={onNavigateToFleet}
+                      className="flex-1 py-3.5 px-5 rounded-2xl font-black text-xs sm:text-sm text-white bg-slate-950 hover:bg-slate-850 active:scale-[0.98] transition-all flex items-center justify-center gap-2 shadow-lg shadow-slate-950/20 group cursor-pointer"
+                    >
+                      <span>Select Car + Driver</span>
+                      <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
+                    </button>
+                  </div>
                 </div>
               </div>
 
@@ -293,6 +325,16 @@ export default function TravelerHome({
         <Footer />
 
       </div>
+
+      {/* 📸 Comprehensive Fleet Photo Gallery Modal */}
+      <FleetGalleryModal
+        isOpen={isGalleryOpen}
+        onClose={() => setIsGalleryOpen(false)}
+        onSelectVehicle={() => {
+          setIsGalleryOpen(false);
+          onNavigateToFleet();
+        }}
+      />
 
     </div>
   );
