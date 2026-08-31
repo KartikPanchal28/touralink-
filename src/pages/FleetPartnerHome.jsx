@@ -28,9 +28,11 @@ import {
   ArrowRight,
   RefreshCw,
   AlertCircle,
-  FileCheck2
+  FileCheck2,
+  Eye
 } from 'lucide-react';
 import { verifyVehicleWithRTO } from '../services/rtoVerificationService';
+import VehicleDetailsModal from '../components/Fleet/VehicleDetailsModal';
 
 const BACKGROUND_VIDEO = '/videos/cape-goa-goa-indien-naturfotografie-verbl-ffende-natur.mp4';
 
@@ -326,6 +328,9 @@ export default function FleetPartnerHome({ user, onLogout }) {
   // RTO Live Verification Simulation State
   const [isVerifyingPlate, setIsVerifyingPlate] = useState(false);
   const [verificationResult, setVerificationResult] = useState(null);
+
+  // View Vehicle Modal State
+  const [selectedVehicleForViewer, setSelectedVehicleForViewer] = useState(null);
 
   const agencyName = user?.fleetDetails?.agencyName || user?.name || 'Sahyadri Travels & Fleet';
   const operatingHub = user?.fleetDetails?.city || 'Mumbai / Pune (Maharashtra)';
@@ -719,7 +724,7 @@ export default function FleetPartnerHome({ user, onLogout }) {
                     </div>
 
                     {/* Action Controls */}
-                    <div className="pt-2 flex items-center justify-between gap-3 border-t border-slate-200/80">
+                    <div className="pt-2 flex flex-wrap items-center justify-between gap-3 border-t border-slate-200/80">
                       <div className="text-xs">
                         <span className="text-slate-400 font-medium">Outstation Rate: </span>
                         <strong className="text-slate-950 font-black">₹{vehicle.ratePerKm} / KM</strong>
@@ -727,17 +732,26 @@ export default function FleetPartnerHome({ user, onLogout }) {
 
                       <div className="flex items-center gap-2">
                         <button
+                          onClick={() => setSelectedVehicleForViewer(vehicle)}
+                          className="flex items-center gap-1 px-3 py-1.5 rounded-xl bg-brand-50 hover:bg-brand-100 text-brand-700 border border-brand-200 text-xs font-extrabold transition-all cursor-pointer"
+                        >
+                          <Eye className="w-3.5 h-3.5" />
+                          <span>View Vehicle</span>
+                        </button>
+
+                        <button
                           onClick={() => toggleVehicleStatus(vehicle.id)}
                           className="px-3 py-1.5 rounded-xl border border-slate-300 text-xs font-extrabold text-slate-700 hover:bg-slate-100 transition-all cursor-pointer"
                         >
-                          Change Status
+                          Status
                         </button>
+
                         <a
                           href={`tel:${vehicle.assignedDriver.phone}`}
-                          className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-slate-950 hover:bg-slate-850 text-white text-xs font-black shadow-md transition-all cursor-pointer"
+                          className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-950 hover:bg-slate-850 text-white text-xs font-black shadow-md transition-all cursor-pointer"
                         >
                           <PhoneCall className="w-3.5 h-3.5" />
-                          <span>Call Driver</span>
+                          <span>Call</span>
                         </a>
                       </div>
                     </div>
@@ -970,6 +984,13 @@ export default function FleetPartnerHome({ user, onLogout }) {
           </div>
         </div>
       )}
+
+      {/* Vehicle Inspector / Details Modal */}
+      <VehicleDetailsModal
+        vehicle={selectedVehicleForViewer}
+        isOpen={Boolean(selectedVehicleForViewer)}
+        onClose={() => setSelectedVehicleForViewer(null)}
+      />
 
     </div>
   );

@@ -14,12 +14,12 @@ import {
   CheckCircle2, 
   Sparkles, 
   MapPin, 
-  IndianRupee,
-  Calendar,
   PhoneCall,
   LogOut,
-  UserCheck
+  UserCheck,
+  Eye
 } from 'lucide-react';
+import VehicleDetailsModal from '../components/Fleet/VehicleDetailsModal';
 
 const BACKGROUND_VIDEO = '/videos/cape-goa-goa-indien-naturfotografie-verbl-ffende-natur.mp4';
 
@@ -381,14 +381,24 @@ export default function FleetPage({ user, onLogout, onBackToHome, onNavigateToDr
                     </div>
                   </div>
 
-                  {/* Action Button */}
-                  <button 
-                    onClick={() => setSelectedVehicleForModal(vehicle)}
-                    className="w-full py-3 px-5 rounded-2xl font-black text-xs sm:text-sm text-white bg-slate-950 hover:bg-slate-850 active:scale-[0.98] transition-all flex items-center justify-center gap-2 shadow-lg shadow-slate-950/20 group cursor-pointer"
-                  >
-                    <span>Request Driver Connect</span>
-                    <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
-                  </button>
+                  {/* Action Buttons: View Vehicle & Request Driver */}
+                  <div className="flex items-center gap-2 pt-1">
+                    <button 
+                      onClick={() => setSelectedVehicleForModal(vehicle)}
+                      className="flex-1 py-3 px-4 rounded-2xl font-black text-xs text-slate-800 bg-slate-100 hover:bg-slate-200 active:scale-[0.98] transition-all flex items-center justify-center gap-1.5 cursor-pointer border border-slate-200"
+                    >
+                      <Eye className="w-4 h-4 text-brand-600" />
+                      <span>View Vehicle</span>
+                    </button>
+
+                    <button 
+                      onClick={() => setSelectedVehicleForModal(vehicle)}
+                      className="flex-1 py-3 px-4 rounded-2xl font-black text-xs text-white bg-slate-950 hover:bg-slate-850 active:scale-[0.98] transition-all flex items-center justify-center gap-1.5 shadow-md shadow-slate-950/20 group cursor-pointer"
+                    >
+                      <span>Book Driver</span>
+                      <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-1" />
+                    </button>
+                  </div>
 
                 </div>
               </div>
@@ -402,72 +412,15 @@ export default function FleetPage({ user, onLogout, onBackToHome, onNavigateToDr
 
       </div>
 
-      {/* Driver Connect Booking Confirmation Modal */}
-      {selectedVehicleForModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-md animate-fadeIn">
-          <div className="relative w-full max-w-lg rounded-3xl bg-white p-6 sm:p-8 border border-slate-200 shadow-2xl space-y-6">
-            
-            <div className="flex items-center justify-between border-b border-slate-100 pb-4">
-              <div className="flex items-center gap-2.5">
-                <div className="w-10 h-10 rounded-xl bg-brand-50 flex items-center justify-center text-brand-600">
-                  <Car className="w-5 h-5" />
-                </div>
-                <div>
-                  <h3 className="text-lg font-black text-slate-900 font-display">
-                    {selectedVehicleForModal.name}
-                  </h3>
-                  <p className="text-xs text-slate-500 font-medium">
-                    {selectedVehicleForModal.categoryLabel}
-                  </p>
-                </div>
-              </div>
-
-              <button
-                onClick={() => setSelectedVehicleForModal(null)}
-                className="p-1.5 rounded-full hover:bg-slate-100 text-slate-400 hover:text-slate-700 cursor-pointer"
-              >
-                ✕
-              </button>
-            </div>
-
-            <div className="space-y-3 text-xs text-slate-700">
-              <div className="flex items-center justify-between p-3 rounded-2xl bg-slate-50 border border-slate-200">
-                <span className="font-semibold text-slate-600">Transparent Pricing</span>
-                <span className="text-sm font-black text-brand-700">{selectedVehicleForModal.ratePerKm}</span>
-              </div>
-
-              <div className="flex items-center justify-between p-3 rounded-2xl bg-slate-50 border border-slate-200">
-                <span className="font-semibold text-slate-600">Middleman Commission</span>
-                <span className="text-sm font-black text-emerald-600">0% (Direct Pay to Driver)</span>
-              </div>
-
-              <div className="flex items-center gap-2 p-3 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-800">
-                <ShieldCheck className="w-4 h-4 shrink-0 text-emerald-600" />
-                <span>100% Police KYC & Commercial Permit Verified Chauffeur assigned instantly.</span>
-              </div>
-            </div>
-
-            <div className="pt-2 flex items-center gap-3">
-              <button
-                onClick={() => setSelectedVehicleForModal(null)}
-                className="w-1/2 py-3 rounded-xl border border-slate-200 text-slate-700 font-bold text-xs hover:bg-slate-50 transition-colors cursor-pointer"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={() => {
-                  alert(`Direct Driver Request confirmed for ${selectedVehicleForModal.name}! A verified chauffeur will contact you shortly.`);
-                  setSelectedVehicleForModal(null);
-                }}
-                className="w-1/2 py-3 rounded-xl bg-slate-950 text-white font-bold text-xs hover:bg-slate-850 transition-colors cursor-pointer"
-              >
-                Confirm Direct Connect
-              </button>
-            </div>
-
-          </div>
-        </div>
-      )}
+      {/* Comprehensive Vehicle Details & Showcase Modal */}
+      <VehicleDetailsModal
+        vehicle={selectedVehicleForModal}
+        isOpen={Boolean(selectedVehicleForModal)}
+        onClose={() => setSelectedVehicleForModal(null)}
+        onBookDirect={(v) => {
+          alert(`Direct Chauffeur Request confirmed for ${v.name}! Verified driver assigned.`);
+        }}
+      />
 
     </div>
   );
