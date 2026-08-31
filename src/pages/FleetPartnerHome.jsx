@@ -49,7 +49,7 @@ const INDIAN_COMMERCIAL_CATALOG = [
     bootSpace: '4 Large Bags + 2 Small',
     defaultRatePerKm: 14,
     defaultDailyRate: 4200,
-    image: '/images/innova crysta.jpg',
+    image: '/images/innova-crysta.jpg',
     description: 'The undisputed gold standard for Indian outstation & ghat tours. Unmatched comfort and reliability.'
   },
   {
@@ -133,7 +133,7 @@ const INDIAN_COMMERCIAL_CATALOG = [
     bootSpace: '4 Large Bags',
     defaultRatePerKm: 12.5,
     defaultDailyRate: 3600,
-    image: '/images/old innova.jpg',
+    image: '/images/old-innova.jpg',
     description: 'Unbeatable durability and proven suspension for ghats, pilgrim circuits, and rough terrain.'
   },
   {
@@ -147,7 +147,7 @@ const INDIAN_COMMERCIAL_CATALOG = [
     bootSpace: '10+ Dedicated Luggage Boot',
     defaultRatePerKm: 26,
     defaultDailyRate: 6800,
-    image: '/images/car fleet images.jpg',
+    image: '/images/car-fleet-images.jpg',
     description: 'European-standard luxury group travel with individual AC vents, reclining pushback seats, and air suspension.'
   }
 ];
@@ -178,7 +178,7 @@ const INITIAL_GARAGE_VEHICLES = [
     minKmPerDay: 300,
     fuel: 'Diesel',
     seating: '7 + 1',
-    image: '/images/innova crysta.jpg'
+    image: '/images/innova-crysta.jpg'
   },
   {
     id: 'veh_2',
@@ -308,7 +308,7 @@ const INITIAL_GARAGE_VEHICLES = [
     minKmPerDay: 300,
     fuel: 'Diesel D-4D',
     seating: '7 + 1',
-    image: '/images/old innova.jpg'
+    image: '/images/old-innova.jpg'
   }
 ];
 
