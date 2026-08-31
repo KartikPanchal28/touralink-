@@ -15,155 +15,10 @@ import {
   IndianRupee,
   Navigation,
   Sparkles,
-  ArrowRight,
-  Eye,
-  Users,
-  Luggage,
-  Fuel,
-  CheckCircle2
+  ArrowRight
 } from 'lucide-react';
-import VehicleDetailsModal from '../components/Fleet/VehicleDetailsModal';
 
 const BACKGROUND_VIDEO = '/videos/cape-goa-goa-indien-naturfotografie-verbl-ffende-natur.mp4';
-
-const FEATURED_CARS = [
-  {
-    id: 'innova_crysta',
-    name: 'Toyota Innova Crysta 2.4 VX',
-    category: 'muv',
-    categoryLabel: '7-Seater Premium MUV',
-    image: '/images/innova-crysta.jpg',
-    seating: '6 + 1 Chauffeur',
-    luggage: '4 Large Bags',
-    fuel: 'Diesel • Manual / Auto',
-    ac: 'Dual Zone AC with Rear Vents',
-    ratePerKm: '₹15 / KM',
-    dailyRate: '₹3,200 / Day',
-    minKmPerDay: '300 KM / Day',
-    popularRoutes: 'Mumbai ⇄ Goa • Pune ⇄ Mahabaleshwar',
-    rating: '4.96',
-    trips: '2,840+ trips'
-  },
-  {
-    id: 'ertiga',
-    name: 'Maruti Suzuki Ertiga ZXi+',
-    category: 'muv',
-    categoryLabel: '7-Seater Family MUV',
-    image: '/images/ertiga.jpg',
-    seating: '6 + 1 Chauffeur',
-    luggage: '3 Bags',
-    fuel: 'Petrol / CNG • AC',
-    ac: 'Powerful Dual AC',
-    ratePerKm: '₹12 / KM',
-    dailyRate: '₹2,600 / Day',
-    minKmPerDay: '250 KM / Day',
-    popularRoutes: 'Ahmedabad ⇄ Surat ⇄ Somnath',
-    rating: '4.92',
-    trips: '4,150+ trips'
-  },
-  {
-    id: 'carens',
-    name: 'Kia Carens Prestige Plus (7-Seater)',
-    category: 'muv',
-    categoryLabel: '7-Seater Luxury MUV',
-    image: '/images/carens.jpg',
-    seating: '6/7 + 1 Chauffeur',
-    luggage: '3 Large Bags',
-    fuel: 'Diesel / Turbo Petrol',
-    ac: 'Roof AC Vents with Diffuser',
-    ratePerKm: '₹13.5 / KM',
-    dailyRate: '₹2,900 / Day',
-    minKmPerDay: '300 KM / Day',
-    popularRoutes: 'Pune ⇄ Goa • Bengaluru ⇄ Coorg',
-    rating: '4.95',
-    trips: '1,920+ trips'
-  },
-  {
-    id: 'dzire',
-    name: 'Maruti Suzuki Dzire Tour S',
-    category: 'sedan',
-    categoryLabel: '4-Seater Compact Sedan',
-    image: '/images/dzire.jpg',
-    seating: '4 + 1 Chauffeur',
-    luggage: '2 Large + 1 Small Bag',
-    fuel: 'Petrol / CNG • AC',
-    ac: 'Chilled AC',
-    ratePerKm: '₹10.5 / KM',
-    dailyRate: '₹2,100 / Day',
-    minKmPerDay: '250 KM / Day',
-    popularRoutes: 'Bengaluru ⇄ Mysuru • Pune ⇄ Lonavala',
-    rating: '4.90',
-    trips: '5,920+ trips'
-  },
-  {
-    id: 'aura',
-    name: 'Hyundai Aura Commercial Sedan',
-    category: 'sedan',
-    categoryLabel: '4-Seater Executive Sedan',
-    image: '/images/aura.jpg',
-    seating: '4 + 1 Chauffeur',
-    luggage: '2 Large Bags (402L Boot)',
-    fuel: 'CNG / Petrol',
-    ac: 'Rear AC Vents',
-    ratePerKm: '₹10.5 / KM',
-    dailyRate: '₹2,150 / Day',
-    minKmPerDay: '250 KM / Day',
-    popularRoutes: 'Mumbai ⇄ Pune • Ahmedabad ⇄ Vadodara',
-    rating: '4.91',
-    trips: '3,210+ trips'
-  },
-  {
-    id: 'wagonr',
-    name: 'Maruti Suzuki WagonR Tour H3',
-    category: 'sedan',
-    categoryLabel: 'Tall-Boy Budget Cab',
-    image: '/images/wagonr.jpg',
-    seating: '4 + 1 Chauffeur',
-    luggage: '2 Medium Bags',
-    fuel: 'CNG (High Mileage 34km/kg)',
-    ac: 'Powerful AC',
-    ratePerKm: '₹9.5 / KM',
-    dailyRate: '₹1,850 / Day',
-    minKmPerDay: '200 KM / Day',
-    popularRoutes: 'City Tours • Airport Drops • Daily Commute',
-    rating: '4.89',
-    trips: '7,400+ trips'
-  },
-  {
-    id: 'old_innova',
-    name: 'Toyota Innova 2.5D Classic',
-    category: 'muv',
-    categoryLabel: '7-Seater Legend MUV',
-    image: '/images/old-innova.jpg',
-    seating: '7 + 1 Chauffeur',
-    luggage: '4 Large Bags',
-    fuel: 'Diesel D-4D Engine',
-    ac: 'Classic Dual AC',
-    ratePerKm: '₹13 / KM',
-    dailyRate: '₹2,800 / Day',
-    minKmPerDay: '300 KM / Day',
-    popularRoutes: 'Pilgrimage Tours • Shirdi • Tirupati • Goa Roadtrips',
-    rating: '4.93',
-    trips: '8,200+ trips'
-  },
-  {
-    id: 'urbania',
-    name: 'Force Urbania Luxury Van (13-Seater)',
-    category: 'van',
-    categoryLabel: 'Luxury Group Traveler',
-    image: '/images/car-fleet-images.jpg',
-    seating: '12 + 1 Chauffeur',
-    luggage: '10+ Bags Dedicated Boot',
-    fuel: 'Diesel • High Roof AC',
-    ac: 'Individual AC Blowers on all seats',
-    ratePerKm: '₹26 / KM',
-    dailyRate: '₹6,800 / Day',
-    minKmPerDay: '300 KM / Day',
-    popularRoutes: 'Goa Wedding Trips • Hampi Heritage Tours • Family Groups',
-    rating: '4.97',
-    trips: '850+ trips'
-  }
-];
 
 export default function TravelerHome({
   user,
@@ -173,7 +28,6 @@ export default function TravelerHome({
 }) {
   // Rental mode tab: 'car_driver' | 'driver_only'
   const [activeTab, setActiveTab] = useState('car_driver');
-  const [selectedVehicleForModal, setSelectedVehicleForModal] = useState(null);
 
   return (
     <div className="relative min-h-screen font-sans text-slate-900 selection:bg-brand-500 selection:text-white">
@@ -232,7 +86,7 @@ export default function TravelerHome({
         </header>
 
         {/* Main Content Area */}
-        <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 space-y-12 flex-1 w-full">
+        <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 space-y-10 flex-1 w-full">
           
           {/* Apple Music Style Frosted Welcome Banner */}
           <section className="relative rounded-3xl overflow-hidden border border-white/40 bg-white/35 backdrop-blur-2xl saturate-[190%] shadow-[0_8px_32px_rgba(0,0,0,0.05)] p-6 sm:p-10 space-y-6 transition-all">
@@ -299,12 +153,12 @@ export default function TravelerHome({
             </div>
           </section>
 
-          {/* 🚗 Two Choice Modes: Car + Driver vs Driver Only */}
+          {/* 🚗 Two Wide Centered Choice Cards: Car + Driver vs Driver Only */}
           <section className="max-w-5xl mx-auto w-full space-y-6">
 
             <div className="text-center space-y-2">
               <h2 className="text-2xl sm:text-3xl font-extrabold font-display text-slate-900 tracking-tight">
-                Choose Your Service
+                Choose Your Rental Mode
               </h2>
               <p className="text-xs sm:text-sm text-slate-700 font-medium">
                 Transparent direct pricing • 0% Middleman Commission • 100% Police & Commercial Badge Verified
@@ -365,7 +219,7 @@ export default function TravelerHome({
                     onClick={onNavigateToFleet}
                     className="w-full py-3.5 px-6 rounded-2xl font-black text-sm text-white bg-slate-950 hover:bg-slate-850 active:scale-[0.98] transition-all flex items-center justify-center gap-2 shadow-lg shadow-slate-950/20 group cursor-pointer"
                   >
-                    <span>Browse All Cabs & Rates</span>
+                    <span>Select Car + Driver</span>
                     <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
                   </button>
                 </div>
@@ -423,7 +277,7 @@ export default function TravelerHome({
                     onClick={onNavigateToDrivers}
                     className="w-full py-3.5 px-6 rounded-2xl font-black text-sm text-white bg-slate-950 hover:bg-slate-850 active:scale-[0.98] transition-all flex items-center justify-center gap-2 shadow-lg shadow-slate-950/20 group cursor-pointer"
                   >
-                    <span>Hire Verified Drivers</span>
+                    <span>Select Driver Only</span>
                     <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
                   </button>
                 </div>
@@ -433,124 +287,12 @@ export default function TravelerHome({
 
           </section>
 
-          {/* 🚗 Live Commercial Fleet Cars Showcase with Direct Photos */}
-          <section className="space-y-6">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-              <div>
-                <h2 className="text-2xl sm:text-3xl font-extrabold font-display text-slate-900 tracking-tight">
-                  Available Fleet & Commercial Cabs
-                </h2>
-                <p className="text-xs sm:text-sm text-slate-700 font-medium mt-1">
-                  Verified vehicles ready for one-way or round-trip outstation & city dispatch. Click any car to inspect.
-                </p>
-              </div>
-
-              <button
-                onClick={onNavigateToFleet}
-                className="inline-flex items-center gap-2 px-4 py-2 rounded-2xl bg-white/80 border border-slate-200 text-xs font-extrabold text-slate-800 hover:bg-white shadow-xs"
-              >
-                <span>View Full Catalog</span>
-                <ArrowRight className="w-3.5 h-3.5 text-brand-600" />
-              </button>
-            </div>
-
-            {/* Grid of All Real Car Pictures */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 items-stretch">
-              {FEATURED_CARS.map((car) => (
-                <div
-                  key={car.id}
-                  className="relative rounded-3xl overflow-hidden border border-slate-200 bg-white/95 backdrop-blur-xl shadow-lg hover:shadow-2xl hover:border-slate-300 transition-all duration-300 flex flex-col justify-between group"
-                >
-                  {/* Photo Container */}
-                  <div 
-                    onClick={() => setSelectedVehicleForModal(car)}
-                    className="relative h-48 w-full overflow-hidden cursor-pointer bg-slate-900"
-                  >
-                    <img
-                      src={car.image}
-                      alt={car.name}
-                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-slate-950/20 to-transparent" />
-
-                    {/* Category & Rating Badges */}
-                    <div className="absolute top-3 left-3 inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-white/95 text-[11px] font-black text-slate-900 shadow-xs">
-                      <Car className="w-3 h-3 text-brand-600" />
-                      <span>{car.categoryLabel.split(' ')[0]}</span>
-                    </div>
-
-                    <div className="absolute top-3 right-3 inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-slate-950/80 text-white text-[11px] font-bold shadow-xs">
-                      <Star className="w-3 h-3 fill-amber-400 text-amber-400" />
-                      <span>{car.rating}</span>
-                    </div>
-
-                    {/* Bottom Title on Image */}
-                    <div className="absolute bottom-2.5 left-3 right-3 text-white">
-                      <div className="text-sm font-black font-display drop-shadow-md truncate">
-                        {car.name}
-                      </div>
-                      <div className="text-[11px] text-emerald-400 font-black drop-shadow-xs">
-                        {car.ratePerKm}
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Card Body */}
-                  <div className="p-4 space-y-3.5 flex-1 flex flex-col justify-between text-xs">
-                    
-                    {/* Specs Pills */}
-                    <div className="grid grid-cols-2 gap-1.5 text-slate-600 font-semibold text-[11px]">
-                      <div className="flex items-center gap-1.5 p-1.5 rounded-lg bg-slate-50 border border-slate-200/60 truncate">
-                        <Users className="w-3.5 h-3.5 text-brand-600 shrink-0" />
-                        <span className="truncate">{car.seating}</span>
-                      </div>
-                      <div className="flex items-center gap-1.5 p-1.5 rounded-lg bg-slate-50 border border-slate-200/60 truncate">
-                        <Luggage className="w-3.5 h-3.5 text-adventure-600 shrink-0" />
-                        <span className="truncate">{car.luggage}</span>
-                      </div>
-                    </div>
-
-                    {/* Action Buttons: View Vehicle & Request Driver */}
-                    <div className="flex items-center gap-2 pt-1">
-                      <button
-                        onClick={() => setSelectedVehicleForModal(car)}
-                        className="flex-1 py-2.5 px-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 font-extrabold text-[11px] transition-all flex items-center justify-center gap-1 cursor-pointer border border-slate-200"
-                      >
-                        <Eye className="w-3.5 h-3.5 text-brand-600" />
-                        <span>View Car</span>
-                      </button>
-
-                      <button
-                        onClick={() => setSelectedVehicleForModal(car)}
-                        className="flex-1 py-2.5 px-3 rounded-xl bg-slate-950 hover:bg-slate-850 text-white font-extrabold text-[11px] shadow-sm transition-all flex items-center justify-center gap-1 cursor-pointer"
-                      >
-                        <span>Book</span>
-                        <ArrowRight className="w-3 h-3" />
-                      </button>
-                    </div>
-
-                  </div>
-                </div>
-              ))}
-            </div>
-          </section>
-
         </main>
 
         {/* Global Touralink Footer */}
         <Footer />
 
       </div>
-
-      {/* Comprehensive Vehicle Details & Showcase Modal */}
-      <VehicleDetailsModal
-        vehicle={selectedVehicleForModal}
-        isOpen={Boolean(selectedVehicleForModal)}
-        onClose={() => setSelectedVehicleForModal(null)}
-        onBookDirect={(v) => {
-          alert(`Chauffeur connect requested for ${v.name}! Driver details dispatched.`);
-        }}
-      />
 
     </div>
   );
