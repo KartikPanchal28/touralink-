@@ -6,14 +6,10 @@ import FleetPartnerHome from './pages/FleetPartnerHome';
 import FleetPage from './pages/FleetPage';
 import DriversPage from './pages/DriversPage';
 
-export default function App() {
-  const [currentUser, setCurrentUser] = useState({
-    name: 'Traveler',
-    email: 'traveler@touralink.in',
-    role: 'traveler', // 'traveler' | 'driver_partner'
-    avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=100&q=80'
-  });
+const BACKGROUND_VIDEO = '/videos/cape-goa-goa-indien-naturfotografie-verbl-ffende-natur.mp4';
 
+export default function App() {
+  const [currentUser, setCurrentUser] = useState(null);
   const [currentView, setCurrentView] = useState('home'); // 'home' | 'fleet' | 'drivers'
 
   const handleLoginSuccess = (userData) => {
@@ -26,7 +22,20 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen text-slate-900 relative">
+    <div className="min-h-screen text-slate-900 relative font-sans selection:bg-brand-500 selection:text-white">
+      {/* 🎥 Background Video Fixed Over Entire Screen */}
+      <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden">
+        <video
+          src={BACKGROUND_VIDEO}
+          autoPlay
+          muted
+          loop
+          playsInline
+          className="w-full h-full object-cover"
+        />
+        <div className="absolute inset-0 bg-slate-900/10 pointer-events-none" />
+      </div>
+
       {/* Main Views */}
       {!currentUser ? (
         <main className="relative z-10 py-6 sm:py-12 flex items-center justify-center min-h-screen">
