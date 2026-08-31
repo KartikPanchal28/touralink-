@@ -47,22 +47,8 @@ const INDIAN_COMMERCIAL_CATALOG = [
     bootSpace: '4 Large Bags + 2 Small',
     defaultRatePerKm: 14,
     defaultDailyRate: 4200,
-    image: 'https://images.unsplash.com/photo-1549399542-7e3f8b79c341?auto=format&fit=crop&w=800&q=80',
+    image: '/images/innova crysta.jpg',
     description: 'The undisputed gold standard for Indian outstation & ghat tours. Unmatched comfort and reliability.'
-  },
-  {
-    modelId: 'innova_hycross',
-    brand: 'Toyota',
-    modelName: 'Toyota Innova Hycross Hybrid',
-    category: 'muv',
-    categoryLabel: 'Luxury Ottoman 7-Seater',
-    seating: '6/7 + 1 Chauffeur',
-    fuel: 'Strong Hybrid Petrol',
-    bootSpace: '4 Large Bags',
-    defaultRatePerKm: 18,
-    defaultDailyRate: 5400,
-    image: 'https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=800&q=80',
-    description: 'Ultra-silent hybrid luxury with panoramic sunroof and captain reclining seats for VIP transfers.'
   },
   {
     modelId: 'ertiga_tour_m',
@@ -75,8 +61,22 @@ const INDIAN_COMMERCIAL_CATALOG = [
     bootSpace: '3 Bags Boot Space',
     defaultRatePerKm: 11,
     defaultDailyRate: 3300,
-    image: 'https://images.unsplash.com/photo-1583121274602-3e2820c69888?auto=format&fit=crop&w=800&q=80',
+    image: '/images/ertiga.jpg',
     description: 'High-mileage, budget-friendly commercial MUV ideal for family outstations and intercity routes.'
+  },
+  {
+    modelId: 'carens',
+    brand: 'Kia',
+    modelName: 'Kia Carens Prestige Plus',
+    category: 'muv',
+    categoryLabel: '7-Seater Luxury MUV',
+    seating: '6/7 + 1 Chauffeur',
+    fuel: 'Diesel / Turbo Petrol',
+    bootSpace: '3 Large Bags',
+    defaultRatePerKm: 13,
+    defaultDailyRate: 3900,
+    image: '/images/carens.jpg',
+    description: 'Modern luxury MPV with one-touch electric tumble captain seats and superior air conditioning.'
   },
   {
     modelId: 'dzire_tour_s',
@@ -89,22 +89,50 @@ const INDIAN_COMMERCIAL_CATALOG = [
     bootSpace: '2 Large Trolley Bags',
     defaultRatePerKm: 10,
     defaultDailyRate: 2800,
-    image: 'https://images.unsplash.com/photo-1550355291-bbee04a92027?auto=format&fit=crop&w=800&q=80',
+    image: '/images/dzire.jpg',
     description: 'India’s most trusted commercial sedan for airport transfers and smooth point-to-point intercity travel.'
   },
   {
-    modelId: 'scorpio_n',
-    brand: 'Mahindra',
-    modelName: 'Mahindra Scorpio-N Z8 (7-Seater)',
-    category: 'suv',
-    categoryLabel: 'Heavy 4x4 Mountain SUV',
-    seating: '6/7 + 1 Chauffeur',
-    fuel: 'Diesel 4x4',
-    bootSpace: '3 Large Bags',
-    defaultRatePerKm: 15,
-    defaultDailyRate: 4500,
-    image: 'https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?auto=format&fit=crop&w=800&q=80',
-    description: 'Rugged ladder-frame SUV built for Sahyadri mountain climbs, Coorg rough trails, and ghat circuits.'
+    modelId: 'aura',
+    brand: 'Hyundai',
+    modelName: 'Hyundai Aura Commercial Sedan',
+    category: 'sedan',
+    categoryLabel: 'Executive 4-Seater Sedan',
+    seating: '4 + 1 Chauffeur',
+    fuel: 'CNG / Petrol',
+    bootSpace: '2 Large Bags (402L)',
+    defaultRatePerKm: 10.5,
+    defaultDailyRate: 2900,
+    image: '/images/aura.jpg',
+    description: 'Refined suspension and quiet cabin tailored for smooth executive city and highway commutes.'
+  },
+  {
+    modelId: 'wagonr',
+    brand: 'Maruti Suzuki',
+    modelName: 'Maruti Suzuki WagonR Tour H3',
+    category: 'sedan',
+    categoryLabel: 'Tall-Boy Budget City Cab',
+    seating: '4 + 1 Chauffeur',
+    fuel: 'CNG (High Mileage)',
+    bootSpace: '2 Medium Bags',
+    defaultRatePerKm: 9.5,
+    defaultDailyRate: 2400,
+    image: '/images/wagonr.jpg',
+    description: 'Maximum headroom and highest mileage commercial hatchback for economical outstations.'
+  },
+  {
+    modelId: 'old_innova',
+    brand: 'Toyota',
+    modelName: 'Toyota Innova 2.5D Classic',
+    category: 'muv',
+    categoryLabel: '7-Seater Legend Workhorse',
+    seating: '7 + 1 Chauffeur',
+    fuel: 'Diesel D-4D',
+    bootSpace: '4 Large Bags',
+    defaultRatePerKm: 12.5,
+    defaultDailyRate: 3600,
+    image: '/images/old innova.jpg',
+    description: 'Unbeatable durability and proven suspension for ghats, pilgrim circuits, and rough terrain.'
   },
   {
     modelId: 'force_urbania',
@@ -117,50 +145,8 @@ const INDIAN_COMMERCIAL_CATALOG = [
     bootSpace: '10+ Dedicated Luggage Boot',
     defaultRatePerKm: 26,
     defaultDailyRate: 6800,
-    image: 'https://images.unsplash.com/photo-1570125909232-eb263c188f7e?auto=format&fit=crop&w=800&q=80',
+    image: '/images/car fleet images.jpg',
     description: 'European-standard luxury group travel with individual AC vents, reclining pushback seats, and air suspension.'
-  },
-  {
-    modelId: 'force_traveler_3350',
-    brand: 'Force Motors',
-    modelName: 'Force Traveler 3350 (17-Seater AC)',
-    category: 'van',
-    categoryLabel: 'Outstation Group Mini-Coach',
-    seating: '17 + 1 Chauffeur',
-    fuel: 'Diesel Commercial AC',
-    bootSpace: '15+ Bags Dedicated Carrier',
-    defaultRatePerKm: 30,
-    defaultDailyRate: 7800,
-    image: 'https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?auto=format&fit=crop&w=800&q=80',
-    description: 'The preferred choice for corporate offsites, destination weddings, and large family pilgrimages.'
-  },
-  {
-    modelId: 'tigor_ev',
-    brand: 'Tata Motors',
-    modelName: 'Tata Tigor Xpres-T EV',
-    category: 'sedan',
-    categoryLabel: 'Zero-Emission Green EV Fleet',
-    seating: '4 + 1 Chauffeur',
-    fuel: 'Electric (EV)',
-    bootSpace: '2 Medium Bags',
-    defaultRatePerKm: 11,
-    defaultDailyRate: 3000,
-    image: 'https://images.unsplash.com/photo-1563720223185-11003d516935?auto=format&fit=crop&w=800&q=80',
-    description: 'Eco-friendly, quiet electric sedan tailored for urban city hops and green corporate commutes.'
-  },
-  {
-    modelId: 'fortuner_4x4',
-    brand: 'Toyota',
-    modelName: 'Toyota Fortuner 2.8 4x4 Automatic',
-    category: 'suv',
-    categoryLabel: 'VIP Luxury 7-Seater SUV',
-    seating: '6 + 1 Chauffeur',
-    fuel: 'Diesel 4x4 Automatic',
-    bootSpace: '4 Large Bags',
-    defaultRatePerKm: 28,
-    defaultDailyRate: 7500,
-    image: 'https://images.unsplash.com/photo-1605559424843-9e4c228bf1c2?auto=format&fit=crop&w=800&q=80',
-    description: 'Commanding road presence with 4x4 capability, premium leather seating, and executive chauffeur service.'
   }
 ];
 
@@ -190,7 +176,7 @@ const INITIAL_GARAGE_VEHICLES = [
     minKmPerDay: 300,
     fuel: 'Diesel',
     seating: '7 + 1',
-    image: 'https://images.unsplash.com/photo-1549399542-7e3f8b79c341?auto=format&fit=crop&w=800&q=80'
+    image: '/images/innova crysta.jpg'
   },
   {
     id: 'veh_2',
@@ -216,13 +202,13 @@ const INITIAL_GARAGE_VEHICLES = [
     minKmPerDay: 300,
     fuel: 'CNG + Petrol',
     seating: '6 + 1',
-    image: 'https://images.unsplash.com/photo-1583121274602-3e2820c69888?auto=format&fit=crop&w=800&q=80'
+    image: '/images/ertiga.jpg'
   },
   {
     id: 'veh_3',
-    modelId: 'force_urbania',
-    modelName: 'Force Urbania Luxury Van (12-Seater)',
-    category: 'van',
+    modelId: 'carens',
+    modelName: 'Kia Carens Prestige Plus (7-Seater)',
+    category: 'muv',
     numberPlate: 'MH 12 QX 7701',
     stateCode: 'MH',
     permitType: 'All India Tourist Permit (AITP)',
@@ -238,11 +224,11 @@ const INITIAL_GARAGE_VEHICLES = [
       rating: 4.97,
       avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=150&q=80'
     },
-    ratePerKm: 26,
+    ratePerKm: 13,
     minKmPerDay: 300,
-    fuel: 'Diesel High-Roof',
-    seating: '12 + 1',
-    image: 'https://images.unsplash.com/photo-1570125909232-eb263c188f7e?auto=format&fit=crop&w=800&q=80'
+    fuel: 'Diesel',
+    seating: '6/7 + 1',
+    image: '/images/carens.jpg'
   },
   {
     id: 'veh_4',
@@ -268,7 +254,59 @@ const INITIAL_GARAGE_VEHICLES = [
     minKmPerDay: 250,
     fuel: 'CNG',
     seating: '4 + 1',
-    image: 'https://images.unsplash.com/photo-1550355291-bbee04a92027?auto=format&fit=crop&w=800&q=80'
+    image: '/images/dzire.jpg'
+  },
+  {
+    id: 'veh_5',
+    modelId: 'wagonr',
+    modelName: 'Maruti Suzuki WagonR Tour H3',
+    category: 'sedan',
+    numberPlate: 'MH 02 CK 6620',
+    stateCode: 'MH',
+    permitType: 'State Commercial Motor Cab',
+    fitnessExpiry: '15 Aug 2028',
+    insuranceStatus: 'Active (SBI General Commercial)',
+    rtoVerified: true,
+    status: 'available',
+    activeRoute: 'In Garage (Ready for Dispatch)',
+    assignedDriver: {
+      name: 'Anand Shinde',
+      phone: '+91 98220 66200',
+      badge: 'MH-02-6620',
+      rating: 4.92,
+      avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=150&q=80'
+    },
+    ratePerKm: 9.5,
+    minKmPerDay: 200,
+    fuel: 'CNG',
+    seating: '4 + 1',
+    image: '/images/wagonr.jpg'
+  },
+  {
+    id: 'veh_6',
+    modelId: 'old_innova',
+    modelName: 'Toyota Innova 2.5D Classic',
+    category: 'muv',
+    numberPlate: 'MH 14 BN 1990',
+    stateCode: 'MH',
+    permitType: 'All India Tourist Permit (AITP)',
+    fitnessExpiry: '10 Nov 2027',
+    insuranceStatus: 'Active (TATA AIG Commercial)',
+    rtoVerified: true,
+    status: 'available',
+    activeRoute: 'In Garage (Ready for Dispatch)',
+    assignedDriver: {
+      name: 'Dattatray Gaikwad',
+      phone: '+91 98220 19900',
+      badge: 'MH-14-1990',
+      rating: 4.96,
+      avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=150&q=80'
+    },
+    ratePerKm: 12.5,
+    minKmPerDay: 300,
+    fuel: 'Diesel D-4D',
+    seating: '7 + 1',
+    image: '/images/old innova.jpg'
   }
 ];
 
