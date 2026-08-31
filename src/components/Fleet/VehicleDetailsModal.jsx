@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   X,
   Car,
@@ -15,13 +15,53 @@ import {
   Zap,
   Clock,
   Compass,
-  ArrowRight
+  ArrowRight,
+  ChevronLeft,
+  ChevronRight,
+  Images,
+  Camera
 } from 'lucide-react';
 
 export default function VehicleDetailsModal({ vehicle, isOpen, onClose, onBookDirect }) {
+  const [activePhotoIndex, setActivePhotoIndex] = useState(0);
   const [bookingConfirmed, setBookingConfirmed] = useState(false);
 
+  // Reset photo index when a new vehicle is opened
+  useEffect(() => {
+    setActivePhotoIndex(0);
+    setBookingConfirmed(false);
+  }, [vehicle, isOpen]);
+
+  // Keyboard navigation for photos (Esc to close, Left/Right to flip photos)
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') onClose();
+      if (e.key === 'ArrowLeft') handlePrevPhoto();
+      if (e.key === 'ArrowRight') handleNextPhoto();
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, activePhotoIndex, vehicle]);
+
   if (!isOpen || !vehicle) return null;
+
+  // Extract all photos available for this specific vehicle model
+  const photoList = (vehicle.images && vehicle.images.length > 0)
+    ? vehicle.images
+    : [vehicle.image || '/images/car-fleet-images.jpg'];
+
+  const currentPhoto = photoList[activePhotoIndex] || photoList[0];
+
+  const handleNextPhoto = (e) => {
+    if (e) e.stopPropagation();
+    setActivePhotoIndex((prev) => (prev + 1) % photoList.length);
+  };
+
+  const handlePrevPhoto = (e) => {
+    if (e) e.stopPropagation();
+    setActivePhotoIndex((prev) => (prev - 1 + photoList.length) % photoList.length);
+  };
 
   const handleConfirm = () => {
     setBookingConfirmed(true);
@@ -33,58 +73,123 @@ export default function VehicleDetailsModal({ vehicle, isOpen, onClose, onBookDi
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/75 backdrop-blur-md animate-fadeIn">
-      <div className="relative w-full max-w-3xl rounded-3xl bg-white border border-slate-200 shadow-2xl overflow-hidden text-slate-900 max-h-[92vh] flex flex-col">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-slate-950/80 backdrop-blur-md animate-fadeIn">
+      <div className="relative w-full max-w-3xl rounded-3xl bg-white border border-slate-200 shadow-2xl overflow-hidden text-slate-900 max-h-[94vh] flex flex-col">
         
         {/* Top Floating Close Button */}
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 z-20 p-2.5 rounded-full bg-slate-950/60 hover:bg-slate-950 text-white backdrop-blur-md transition-all cursor-pointer shadow-lg"
-          title="Close Viewer"
+          className="absolute top-4 right-4 z-30 p-2.5 rounded-full bg-slate-950/60 hover:bg-slate-950 text-white backdrop-blur-md transition-all cursor-pointer shadow-lg hover:scale-105"
+          title="Close Vehicle Viewer"
         >
           <X className="w-5 h-5" />
         </button>
 
         {/* Scrollable Content Container */}
-        <div className="overflow-y-auto p-6 sm:p-8 space-y-6">
+        <div className="overflow-y-auto p-5 sm:p-8 space-y-6">
           
-          {/* Hero Vehicle Photo & Badge Banner */}
-          <div className="relative h-64 sm:h-80 w-full rounded-2xl overflow-hidden bg-slate-900 border border-slate-200 shadow-inner group">
-            <img
-              src={vehicle.image}
-              alt={vehicle.name || vehicle.modelName}
-              className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-slate-950/85 via-slate-950/30 to-transparent" />
+          {/* 📸 Multi-Photo Hero Showcase for this specific vehicle */}
+          <div className="space-y-3">
+            <div className="relative h-64 sm:h-84 w-full rounded-2xl overflow-hidden bg-slate-950 border border-slate-200 shadow-inner group">
+              <img
+                src={currentPhoto}
+                alt={`${vehicle.name || vehicle.modelName} view ${activePhotoIndex + 1}`}
+                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                onError={(e) => {
+                  // Graceful fallback to primary vehicle image if a supplementary image is loading
+                  if (vehicle.image && e.target.src !== vehicle.image) {
+                    e.target.src = vehicle.image;
+                  }
+                }}
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-slate-950/85 via-slate-950/25 to-transparent pointer-events-none" />
 
-            {/* Category & Rating Badges */}
-            <div className="absolute top-4 left-4 flex flex-wrap items-center gap-2">
-              <span className="px-3 py-1 rounded-full bg-white/95 backdrop-blur-md text-xs font-black text-slate-900 shadow-xs flex items-center gap-1.5">
-                <Car className="w-3.5 h-3.5 text-brand-600" />
-                <span>{vehicle.categoryLabel || vehicle.category?.toUpperCase()}</span>
-              </span>
+              {/* Multi-Photo Flip Controls (If multiple photos exist for this car) */}
+              {photoList.length > 1 && (
+                <>
+                  <button
+                    type="button"
+                    onClick={handlePrevPhoto}
+                    className="absolute left-3 top-1/2 -translate-y-1/2 p-2.5 rounded-full bg-slate-950/70 hover:bg-slate-950 text-white backdrop-blur-md shadow-lg transition-all cursor-pointer hover:scale-110 active:scale-95"
+                    aria-label="Previous car photo"
+                  >
+                    <ChevronLeft className="w-5 h-5" />
+                  </button>
 
-              {vehicle.numberPlate && (
-                <span className="px-2.5 py-0.5 rounded-md bg-amber-400 border border-amber-500 text-slate-950 text-[11px] font-black font-mono shadow-xs">
-                  [IND] {vehicle.numberPlate}
-                </span>
+                  <button
+                    type="button"
+                    onClick={handleNextPhoto}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 p-2.5 rounded-full bg-slate-950/70 hover:bg-slate-950 text-white backdrop-blur-md shadow-lg transition-all cursor-pointer hover:scale-110 active:scale-95"
+                    aria-label="Next car photo"
+                  >
+                    <ChevronRight className="w-5 h-5" />
+                  </button>
+                </>
               )}
-            </div>
 
-            {/* Bottom Title & Highlight */}
-            <div className="absolute bottom-4 left-4 right-4 text-white space-y-1">
-              <div className="flex items-center gap-2">
-                <div className="flex items-center gap-1 px-2 py-0.5 rounded-md bg-amber-500/90 text-slate-950 text-xs font-black">
-                  <Star className="w-3 h-3 fill-slate-950" />
-                  <span>{vehicle.rating || '4.95'}</span>
-                </div>
-                <span className="text-xs text-slate-300 font-semibold">{vehicle.trips || '2,400+ verified trips'}</span>
+              {/* Category & Multi-Photo Counter Badges */}
+              <div className="absolute top-4 left-4 flex flex-wrap items-center gap-2">
+                <span className="px-3 py-1 rounded-full bg-white/95 backdrop-blur-md text-xs font-black text-slate-900 shadow-xs flex items-center gap-1.5">
+                  <Car className="w-3.5 h-3.5 text-brand-600" />
+                  <span>{vehicle.categoryLabel || vehicle.category?.toUpperCase()}</span>
+                </span>
+
+                {vehicle.numberPlate && (
+                  <span className="px-2.5 py-0.5 rounded-md bg-amber-400 border border-amber-500 text-slate-950 text-[11px] font-black font-mono shadow-xs">
+                    [IND] {vehicle.numberPlate}
+                  </span>
+                )}
+
+                {photoList.length > 1 && (
+                  <span className="px-2.5 py-1 rounded-full bg-slate-950/80 text-white backdrop-blur-md border border-white/20 text-[11px] font-black shadow-xs flex items-center gap-1">
+                    <Camera className="w-3 h-3 text-brand-400" />
+                    <span>Photo {activePhotoIndex + 1} of {photoList.length}</span>
+                  </span>
+                )}
               </div>
 
-              <h2 className="text-2xl sm:text-3xl font-extrabold font-display tracking-tight text-white drop-shadow-md">
-                {vehicle.name || vehicle.modelName}
-              </h2>
+              {/* Bottom Title & Specs on Image */}
+              <div className="absolute bottom-4 left-4 right-4 text-white space-y-1">
+                <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-1 px-2 py-0.5 rounded-md bg-amber-500/90 text-slate-950 text-xs font-black">
+                    <Star className="w-3 h-3 fill-slate-950" />
+                    <span>{vehicle.rating || '4.95'}</span>
+                  </div>
+                  <span className="text-xs text-slate-300 font-semibold">{vehicle.trips || '2,400+ verified trips'}</span>
+                </div>
+
+                <h2 className="text-2xl sm:text-3xl font-extrabold font-display tracking-tight text-white drop-shadow-md">
+                  {vehicle.name || vehicle.modelName}
+                </h2>
+              </div>
             </div>
+
+            {/* Thumbnail Navigation Strip (When multiple photos are available for this car) */}
+            {photoList.length > 1 && (
+              <div className="flex items-center gap-2.5 overflow-x-auto pb-1">
+                {photoList.map((imgUrl, idx) => (
+                  <button
+                    key={idx}
+                    type="button"
+                    onClick={() => setActivePhotoIndex(idx)}
+                    className={`relative w-20 h-14 rounded-xl overflow-hidden border-2 transition-all cursor-pointer shrink-0 ${
+                      idx === activePhotoIndex
+                        ? 'border-brand-600 scale-105 shadow-md ring-2 ring-brand-500/30'
+                        : 'border-slate-200 opacity-60 hover:opacity-100'
+                    }`}
+                  >
+                    <img
+                      src={imgUrl}
+                      alt={`Thumbnail ${idx + 1}`}
+                      className="w-full h-full object-cover"
+                    />
+                    <div className="absolute bottom-0.5 right-1 text-[9px] font-black text-white bg-black/60 px-1 rounded">
+                      #{idx + 1}
+                    </div>
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Quick Technical Specs Pills Grid */}
@@ -198,16 +303,16 @@ export default function VehicleDetailsModal({ vehicle, isOpen, onClose, onBookDi
               Vehicle Amenities & Safety Clearances
             </h4>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs">
-              {[
-                '✓ Dual AC with Roof Vents',
-                '✓ GPS Live Real-time Tracking',
-                '✓ MVD Fitness Certified',
-                '✓ Commercial Insurance Active',
-                '✓ Fastag Electronic Toll Enabled',
-                '✓ First Aid & Emergency Kit'
-              ].map((item, i) => (
+              {(vehicle.features || [
+                'Dual AC with Roof Vents',
+                'GPS Live Real-time Tracking',
+                'MVD Fitness Certified',
+                'Commercial Insurance Active',
+                'Fastag Electronic Toll Enabled',
+                'First Aid & Emergency Kit'
+              ]).map((item, i) => (
                 <div key={i} className="p-2.5 rounded-xl bg-slate-50 border border-slate-200 font-semibold text-slate-700">
-                  {item}
+                  ✓ {item}
                 </div>
               ))}
             </div>

@@ -30,6 +30,11 @@ const FLEET_DATA = [
     category: 'muv',
     categoryLabel: '7-Seater Premium MUV',
     image: '/images/innova-crysta.jpg',
+    images: [
+      '/images/innova-crysta.jpg',
+      '/images/innova-crysta-1.jpg',
+      '/images/innova-crysta-2.jpg'
+    ],
     seating: '6 + 1 Chauffeur',
     luggage: '4 Large Bags',
     fuel: 'Diesel • Manual / Auto',
@@ -48,6 +53,11 @@ const FLEET_DATA = [
     category: 'muv',
     categoryLabel: '7-Seater Family MUV',
     image: '/images/ertiga.jpg',
+    images: [
+      '/images/ertiga.jpg',
+      '/images/ertiga-1.jpg',
+      '/images/ertiga-2.jpg'
+    ],
     seating: '6 + 1 Chauffeur',
     luggage: '3 Bags',
     fuel: 'Petrol / CNG • AC',
@@ -66,6 +76,11 @@ const FLEET_DATA = [
     category: 'muv',
     categoryLabel: '7-Seater Luxury MUV',
     image: '/images/carens.jpg',
+    images: [
+      '/images/carens.jpg',
+      '/images/carens-1.jpg',
+      '/images/carens-2.jpg'
+    ],
     seating: '6/7 + 1 Chauffeur',
     luggage: '3 Large Bags',
     fuel: 'Diesel / Turbo Petrol',
@@ -84,6 +99,11 @@ const FLEET_DATA = [
     category: 'sedan',
     categoryLabel: '4-Seater Compact Sedan',
     image: '/images/dzire.jpg',
+    images: [
+      '/images/dzire.jpg',
+      '/images/dzire-1.jpg',
+      '/images/dzire-2.jpg'
+    ],
     seating: '4 + 1 Chauffeur',
     luggage: '2 Large + 1 Small Bag',
     fuel: 'Petrol / CNG • AC',
@@ -102,6 +122,11 @@ const FLEET_DATA = [
     category: 'sedan',
     categoryLabel: '4-Seater Executive Sedan',
     image: '/images/aura.jpg',
+    images: [
+      '/images/aura.jpg',
+      '/images/aura-1.jpg',
+      '/images/aura-2.jpg'
+    ],
     seating: '4 + 1 Chauffeur',
     luggage: '2 Large Bags (402L Boot)',
     fuel: 'CNG / Petrol',
@@ -120,6 +145,11 @@ const FLEET_DATA = [
     category: 'sedan',
     categoryLabel: 'Tall-Boy Budget Cab',
     image: '/images/wagonr.jpg',
+    images: [
+      '/images/wagonr.jpg',
+      '/images/wagonr-1.jpg',
+      '/images/wagonr-2.jpg'
+    ],
     seating: '4 + 1 Chauffeur',
     luggage: '2 Medium Bags',
     fuel: 'CNG (High Mileage 34km/kg)',
@@ -138,6 +168,11 @@ const FLEET_DATA = [
     category: 'muv',
     categoryLabel: '7-Seater Legend MUV',
     image: '/images/old-innova.jpg',
+    images: [
+      '/images/old-innova.jpg',
+      '/images/old-innova-1.jpg',
+      '/images/old-innova-2.jpg'
+    ],
     seating: '7 + 1 Chauffeur',
     luggage: '4 Large Bags',
     fuel: 'Diesel D-4D Engine',
@@ -156,6 +191,9 @@ const FLEET_DATA = [
     category: 'van',
     categoryLabel: 'Luxury Group Traveler',
     image: '/images/car-fleet-images.jpg',
+    images: [
+      '/images/car-fleet-images.jpg'
+    ],
     seating: '12 + 1 Chauffeur',
     luggage: '10+ Bags Dedicated Boot',
     fuel: 'Diesel • High Roof AC',
@@ -315,8 +353,12 @@ export default function FleetPage({ user, onLogout, onBackToHome, onNavigateToDr
                 key={vehicle.id}
                 className="relative rounded-3xl overflow-hidden border border-slate-200 bg-white/90 backdrop-blur-xl shadow-xl shadow-slate-200/50 hover:bg-white hover:border-slate-300 hover:shadow-2xl transition-all duration-300 flex flex-col justify-between group"
               >
-                {/* Vehicle Image Preview */}
-                <div className="relative h-52 sm:h-56 w-full overflow-hidden">
+                {/* Vehicle Image Preview with Multi-Photo Click Trigger */}
+                <div 
+                  onClick={() => setSelectedVehicleForModal(vehicle)}
+                  className="relative h-52 sm:h-56 w-full overflow-hidden cursor-pointer bg-slate-900"
+                  title="Click to view all photos of this vehicle"
+                >
                   <img
                     src={vehicle.image}
                     alt={vehicle.name}
@@ -330,17 +372,27 @@ export default function FleetPage({ user, onLogout, onBackToHome, onNavigateToDr
                     <span>{vehicle.categoryLabel}</span>
                   </div>
 
-                  {/* Rating */}
-                  <div className="absolute top-4 right-4 inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-slate-900/80 backdrop-blur-md text-white text-xs font-bold shadow-xs">
-                    <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
-                    <span>{vehicle.rating}</span>
+                  {/* Multi-Photo Count & Rating Badges */}
+                  <div className="absolute top-4 right-4 flex items-center gap-1.5">
+                    {vehicle.images && vehicle.images.length > 1 && (
+                      <div className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-slate-950/80 backdrop-blur-md text-white text-[11px] font-black border border-white/20 shadow-xs">
+                        <span>📸 {vehicle.images.length} Photos</span>
+                      </div>
+                    )}
+                    <div className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-slate-900/80 backdrop-blur-md text-white text-xs font-bold shadow-xs">
+                      <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
+                      <span>{vehicle.rating}</span>
+                    </div>
                   </div>
 
                   {/* Vehicle Name Headline */}
-                  <div className="absolute bottom-3 left-4 right-4 text-white">
+                  <div className="absolute bottom-3 left-4 right-4 text-white flex items-end justify-between">
                     <div className="text-lg font-black font-display drop-shadow-md">
                       {vehicle.name}
                     </div>
+                    <span className="text-[10px] font-bold text-brand-300 bg-black/40 px-2 py-0.5 rounded backdrop-blur-xs">
+                      View Photos
+                    </span>
                   </div>
                 </div>
 

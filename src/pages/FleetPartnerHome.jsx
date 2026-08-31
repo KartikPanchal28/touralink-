@@ -50,6 +50,11 @@ const INDIAN_COMMERCIAL_CATALOG = [
     defaultRatePerKm: 14,
     defaultDailyRate: 4200,
     image: '/images/innova-crysta.jpg',
+    images: [
+      '/images/innova-crysta.jpg',
+      '/images/innova-crysta-1.jpg',
+      '/images/innova-crysta-2.jpg'
+    ],
     description: 'The undisputed gold standard for Indian outstation & ghat tours. Unmatched comfort and reliability.'
   },
   {
@@ -64,6 +69,11 @@ const INDIAN_COMMERCIAL_CATALOG = [
     defaultRatePerKm: 11,
     defaultDailyRate: 3300,
     image: '/images/ertiga.jpg',
+    images: [
+      '/images/ertiga.jpg',
+      '/images/ertiga-1.jpg',
+      '/images/ertiga-2.jpg'
+    ],
     description: 'High-mileage, budget-friendly commercial MUV ideal for family outstations and intercity routes.'
   },
   {
@@ -78,6 +88,11 @@ const INDIAN_COMMERCIAL_CATALOG = [
     defaultRatePerKm: 13,
     defaultDailyRate: 3900,
     image: '/images/carens.jpg',
+    images: [
+      '/images/carens.jpg',
+      '/images/carens-1.jpg',
+      '/images/carens-2.jpg'
+    ],
     description: 'Modern luxury MPV with one-touch electric tumble captain seats and superior air conditioning.'
   },
   {
@@ -92,6 +107,11 @@ const INDIAN_COMMERCIAL_CATALOG = [
     defaultRatePerKm: 10,
     defaultDailyRate: 2800,
     image: '/images/dzire.jpg',
+    images: [
+      '/images/dzire.jpg',
+      '/images/dzire-1.jpg',
+      '/images/dzire-2.jpg'
+    ],
     description: 'India’s most trusted commercial sedan for airport transfers and smooth point-to-point intercity travel.'
   },
   {
@@ -106,6 +126,11 @@ const INDIAN_COMMERCIAL_CATALOG = [
     defaultRatePerKm: 10.5,
     defaultDailyRate: 2900,
     image: '/images/aura.jpg',
+    images: [
+      '/images/aura.jpg',
+      '/images/aura-1.jpg',
+      '/images/aura-2.jpg'
+    ],
     description: 'Refined suspension and quiet cabin tailored for smooth executive city and highway commutes.'
   },
   {
@@ -120,6 +145,11 @@ const INDIAN_COMMERCIAL_CATALOG = [
     defaultRatePerKm: 9.5,
     defaultDailyRate: 2400,
     image: '/images/wagonr.jpg',
+    images: [
+      '/images/wagonr.jpg',
+      '/images/wagonr-1.jpg',
+      '/images/wagonr-2.jpg'
+    ],
     description: 'Maximum headroom and highest mileage commercial hatchback for economical outstations.'
   },
   {
@@ -134,6 +164,11 @@ const INDIAN_COMMERCIAL_CATALOG = [
     defaultRatePerKm: 12.5,
     defaultDailyRate: 3600,
     image: '/images/old-innova.jpg',
+    images: [
+      '/images/old-innova.jpg',
+      '/images/old-innova-1.jpg',
+      '/images/old-innova-2.jpg'
+    ],
     description: 'Unbeatable durability and proven suspension for ghats, pilgrim circuits, and rough terrain.'
   },
   {
@@ -148,6 +183,9 @@ const INDIAN_COMMERCIAL_CATALOG = [
     defaultRatePerKm: 26,
     defaultDailyRate: 6800,
     image: '/images/car-fleet-images.jpg',
+    images: [
+      '/images/car-fleet-images.jpg'
+    ],
     description: 'European-standard luxury group travel with individual AC vents, reclining pushback seats, and air suspension.'
   }
 ];
@@ -178,7 +216,12 @@ const INITIAL_GARAGE_VEHICLES = [
     minKmPerDay: 300,
     fuel: 'Diesel',
     seating: '7 + 1',
-    image: '/images/innova-crysta.jpg'
+    image: '/images/innova-crysta.jpg',
+    images: [
+      '/images/innova-crysta.jpg',
+      '/images/innova-crysta-1.jpg',
+      '/images/innova-crysta-2.jpg'
+    ]
   },
   {
     id: 'veh_2',
@@ -204,7 +247,12 @@ const INITIAL_GARAGE_VEHICLES = [
     minKmPerDay: 300,
     fuel: 'CNG + Petrol',
     seating: '6 + 1',
-    image: '/images/ertiga.jpg'
+    image: '/images/ertiga.jpg',
+    images: [
+      '/images/ertiga.jpg',
+      '/images/ertiga-1.jpg',
+      '/images/ertiga-2.jpg'
+    ]
   },
   {
     id: 'veh_3',
@@ -230,7 +278,12 @@ const INITIAL_GARAGE_VEHICLES = [
     minKmPerDay: 300,
     fuel: 'Diesel',
     seating: '6/7 + 1',
-    image: '/images/carens.jpg'
+    image: '/images/carens.jpg',
+    images: [
+      '/images/carens.jpg',
+      '/images/carens-1.jpg',
+      '/images/carens-2.jpg'
+    ]
   },
   {
     id: 'veh_4',
@@ -256,7 +309,12 @@ const INITIAL_GARAGE_VEHICLES = [
     minKmPerDay: 250,
     fuel: 'CNG',
     seating: '4 + 1',
-    image: '/images/dzire.jpg'
+    image: '/images/dzire.jpg',
+    images: [
+      '/images/dzire.jpg',
+      '/images/dzire-1.jpg',
+      '/images/dzire-2.jpg'
+    ]
   },
   {
     id: 'veh_5',
@@ -282,7 +340,12 @@ const INITIAL_GARAGE_VEHICLES = [
     minKmPerDay: 200,
     fuel: 'CNG',
     seating: '4 + 1',
-    image: '/images/wagonr.jpg'
+    image: '/images/wagonr.jpg',
+    images: [
+      '/images/wagonr.jpg',
+      '/images/wagonr-1.jpg',
+      '/images/wagonr-2.jpg'
+    ]
   },
   {
     id: 'veh_6',
@@ -308,7 +371,12 @@ const INITIAL_GARAGE_VEHICLES = [
     minKmPerDay: 300,
     fuel: 'Diesel D-4D',
     seating: '7 + 1',
-    image: '/images/old-innova.jpg'
+    image: '/images/old-innova.jpg',
+    images: [
+      '/images/old-innova.jpg',
+      '/images/old-innova-1.jpg',
+      '/images/old-innova-2.jpg'
+    ]
   }
 ];
 
@@ -629,7 +697,11 @@ export default function FleetPartnerHome({ user, onLogout }) {
                   className="relative rounded-3xl overflow-hidden border border-white/50 bg-white/80 backdrop-blur-2xl shadow-xl hover:shadow-2xl transition-all duration-300 flex flex-col justify-between group"
                 >
                   {/* Top Image Preview with Number Plate Overlay */}
-                  <div className="relative h-60 w-full overflow-hidden">
+                  <div 
+                    onClick={() => setSelectedVehicleForViewer(vehicle)}
+                    className="relative h-60 w-full overflow-hidden cursor-pointer"
+                    title="Click to view all photos and details of this vehicle"
+                  >
                     <img
                       src={vehicle.image}
                       alt={vehicle.modelName}
@@ -646,7 +718,10 @@ export default function FleetPartnerHome({ user, onLogout }) {
                     {/* Duty Status Badge */}
                     <div className="absolute top-4 right-4">
                       <button
-                        onClick={() => toggleVehicleStatus(vehicle.id)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          toggleVehicleStatus(vehicle.id);
+                        }}
                         className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black backdrop-blur-md border shadow-md transition-all cursor-pointer ${
                           vehicle.status === 'on_duty'
                             ? 'bg-emerald-500/90 text-white border-emerald-400'
@@ -665,8 +740,13 @@ export default function FleetPartnerHome({ user, onLogout }) {
 
                     {/* Bottom Headline on Image */}
                     <div className="absolute bottom-4 left-4 right-4 text-white space-y-1">
-                      <div className="text-xl font-black font-display drop-shadow-md">
-                        {vehicle.modelName}
+                      <div className="flex items-center justify-between">
+                        <div className="text-xl font-black font-display drop-shadow-md">
+                          {vehicle.modelName}
+                        </div>
+                        <span className="text-[10px] font-bold text-brand-300 bg-black/40 px-2 py-0.5 rounded backdrop-blur-xs">
+                          📸 {vehicle.images?.length || 1} Photos
+                        </span>
                       </div>
                       <div className="text-xs text-slate-200 font-medium flex items-center gap-2">
                         <span>{vehicle.seating} Seater</span>
