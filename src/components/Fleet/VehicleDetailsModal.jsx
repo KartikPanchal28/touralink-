@@ -19,17 +19,23 @@ import {
   ChevronLeft,
   ChevronRight,
   Images,
-  Camera
+  Camera,
+  Maximize2,
+  Minimize2,
+  SlidersHorizontal
 } from 'lucide-react';
 
-export default function VehicleDetailsModal({ vehicle, isOpen, onClose, onBookDirect }) {
+export default function VehicleDetailsModal({ vehicle, tripDetails, isOpen, onClose, onBookDirect }) {
   const [activePhotoIndex, setActivePhotoIndex] = useState(0);
   const [bookingConfirmed, setBookingConfirmed] = useState(false);
+  const [fitMode, setFitMode] = useState('contain'); // 'contain' (Whole car visible) | 'cover' (Zoomed)
+  const [isImageLoading, setIsImageLoading] = useState(true);
 
   // Reset photo index when a new vehicle is opened
   useEffect(() => {
     setActivePhotoIndex(0);
     setBookingConfirmed(false);
+    setIsImageLoading(true);
   }, [vehicle, isOpen]);
 
   // Keyboard navigation for photos (Esc to close, Left/Right to flip photos)
@@ -88,29 +94,72 @@ export default function VehicleDetailsModal({ vehicle, isOpen, onClose, onBookDi
         {/* Scrollable Content Container */}
         <div className="overflow-y-auto p-5 sm:p-8 space-y-6">
           
-          {/* 📸 Multi-Photo Hero Showcase for this specific vehicle */}
+          {/* 📸 Multi-Photo Hero Showcase with Dual-Layer Auto-Fit Presentation */}
           <div className="space-y-3">
-            <div className="relative h-64 sm:h-84 w-full rounded-2xl overflow-hidden bg-slate-950 border border-slate-200 shadow-inner group">
+            <div className="relative h-64 sm:h-84 w-full rounded-2xl overflow-hidden bg-slate-950 border border-slate-800 shadow-inner group flex items-center justify-center">
+              
+              {/* Layer 1: Ambient Blurred Backdrop to smoothly fill wide view */}
               <img
                 src={currentPhoto}
-                alt={`${vehicle.name || vehicle.modelName} view ${activePhotoIndex + 1}`}
-                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                onError={(e) => {
-                  // Graceful fallback to primary vehicle image if a supplementary image is loading
-                  if (vehicle.image && e.target.src !== vehicle.image) {
-                    e.target.src = vehicle.image;
-                  }
-                }}
+                alt=""
+                className="absolute inset-0 w-full h-full object-cover blur-3xl opacity-35 scale-125 select-none pointer-events-none"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-slate-950/85 via-slate-950/25 to-transparent pointer-events-none" />
+              <div className="absolute inset-0 bg-radial from-transparent via-slate-950/60 to-slate-950/90 pointer-events-none" />
+
+              {/* Layer 2: Skeleton Loader while switching photos */}
+              {isImageLoading && (
+                <div className="absolute inset-0 flex items-center justify-center bg-slate-900/80 backdrop-blur-xs z-10 animate-pulse">
+                  <div className="flex flex-col items-center gap-2 text-slate-400">
+                    <Car className="w-8 h-8 animate-bounce text-brand-400" />
+                    <span className="text-xs font-semibold">Adjusting HD vehicle view...</span>
+                  </div>
+                </div>
+              )}
+
+              {/* Layer 3: Foreground Main Vehicle Photo with Auto-Fit */}
+              <div className="relative z-10 w-full h-full flex items-center justify-center p-2 sm:p-4">
+                <img
+                  key={`${currentPhoto}-${fitMode}`}
+                  src={currentPhoto}
+                  alt={`${vehicle.name || vehicle.modelName} view ${activePhotoIndex + 1}`}
+                  onLoad={() => setIsImageLoading(false)}
+                  onError={(e) => {
+                    setIsImageLoading(false);
+                    if (vehicle.image && e.target.src !== vehicle.image) {
+                      e.target.src = vehicle.image;
+                    }
+                  }}
+                  className={`max-w-full max-h-full transition-all duration-300 ${
+                    fitMode === 'contain'
+                      ? 'object-contain drop-shadow-[0_20px_35px_rgba(0,0,0,0.85)]'
+                      : 'w-full h-full object-cover'
+                  } ${isImageLoading ? 'opacity-0 scale-95' : 'opacity-100 scale-100'}`}
+                />
+              </div>
+
+              {/* Framing Mode Toggle Button */}
+              <div className="absolute top-4 right-16 z-20">
+                <button
+                  type="button"
+                  onClick={() => setFitMode(prev => prev === 'contain' ? 'cover' : 'contain')}
+                  className="px-2.5 py-1 rounded-full bg-slate-950/75 hover:bg-slate-900 text-white text-[11px] font-bold border border-white/20 backdrop-blur-md transition-all flex items-center gap-1.5 cursor-pointer shadow-md hover:scale-105"
+                  title={fitMode === 'contain' ? 'Switch to Zoomed Fill View' : 'Switch to Full Vehicle Fit (No Crop)'}
+                >
+                  <SlidersHorizontal className="w-3 h-3 text-brand-400" />
+                  <span>{fitMode === 'contain' ? 'Fit Whole Car' : 'Fill View'}</span>
+                </button>
+              </div>
 
               {/* Multi-Photo Flip Controls (If multiple photos exist for this car) */}
               {photoList.length > 1 && (
                 <>
                   <button
                     type="button"
-                    onClick={handlePrevPhoto}
-                    className="absolute left-3 top-1/2 -translate-y-1/2 p-2.5 rounded-full bg-slate-950/70 hover:bg-slate-950 text-white backdrop-blur-md shadow-lg transition-all cursor-pointer hover:scale-110 active:scale-95"
+                    onClick={(e) => {
+                      setIsImageLoading(true);
+                      handlePrevPhoto(e);
+                    }}
+                    className="absolute left-3 top-1/2 -translate-y-1/2 z-20 p-2.5 rounded-full bg-slate-950/75 hover:bg-slate-900 text-white backdrop-blur-md border border-white/10 shadow-xl transition-all cursor-pointer hover:scale-110 active:scale-95"
                     aria-label="Previous car photo"
                   >
                     <ChevronLeft className="w-5 h-5" />
@@ -118,8 +167,11 @@ export default function VehicleDetailsModal({ vehicle, isOpen, onClose, onBookDi
 
                   <button
                     type="button"
-                    onClick={handleNextPhoto}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 p-2.5 rounded-full bg-slate-950/70 hover:bg-slate-950 text-white backdrop-blur-md shadow-lg transition-all cursor-pointer hover:scale-110 active:scale-95"
+                    onClick={(e) => {
+                      setIsImageLoading(true);
+                      handleNextPhoto(e);
+                    }}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 z-20 p-2.5 rounded-full bg-slate-950/75 hover:bg-slate-900 text-white backdrop-blur-md border border-white/10 shadow-xl transition-all cursor-pointer hover:scale-110 active:scale-95"
                     aria-label="Next car photo"
                   >
                     <ChevronRight className="w-5 h-5" />
@@ -128,7 +180,7 @@ export default function VehicleDetailsModal({ vehicle, isOpen, onClose, onBookDi
               )}
 
               {/* Category & Multi-Photo Counter Badges */}
-              <div className="absolute top-4 left-4 flex flex-wrap items-center gap-2">
+              <div className="absolute top-4 left-4 z-20 flex flex-wrap items-center gap-2 pointer-events-none">
                 <span className="px-3 py-1 rounded-full bg-white/95 backdrop-blur-md text-xs font-black text-slate-900 shadow-xs flex items-center gap-1.5">
                   <Car className="w-3.5 h-3.5 text-brand-600" />
                   <span>{vehicle.categoryLabel || vehicle.category?.toUpperCase()}</span>
@@ -149,7 +201,7 @@ export default function VehicleDetailsModal({ vehicle, isOpen, onClose, onBookDi
               </div>
 
               {/* Bottom Title & Specs on Image */}
-              <div className="absolute bottom-4 left-4 right-4 text-white space-y-1">
+              <div className="absolute bottom-4 left-4 right-4 z-20 text-white space-y-1 pointer-events-none">
                 <div className="flex items-center gap-2">
                   <div className="flex items-center gap-1 px-2 py-0.5 rounded-md bg-amber-500/90 text-slate-950 text-xs font-black">
                     <Star className="w-3 h-3 fill-slate-950" />
@@ -158,7 +210,7 @@ export default function VehicleDetailsModal({ vehicle, isOpen, onClose, onBookDi
                   <span className="text-xs text-slate-300 font-semibold">{vehicle.trips || '2,400+ verified trips'}</span>
                 </div>
 
-                <h2 className="text-2xl sm:text-3xl font-extrabold font-display tracking-tight text-white drop-shadow-md">
+                <h2 className="text-xl sm:text-3xl font-extrabold font-display tracking-tight text-white drop-shadow-md">
                   {vehicle.name || vehicle.modelName}
                 </h2>
               </div>
@@ -171,8 +223,11 @@ export default function VehicleDetailsModal({ vehicle, isOpen, onClose, onBookDi
                   <button
                     key={idx}
                     type="button"
-                    onClick={() => setActivePhotoIndex(idx)}
-                    className={`relative w-20 h-14 rounded-xl overflow-hidden border-2 transition-all cursor-pointer shrink-0 ${
+                    onClick={() => {
+                      setIsImageLoading(true);
+                      setActivePhotoIndex(idx);
+                    }}
+                    className={`relative w-22 h-14 rounded-xl overflow-hidden border-2 transition-all cursor-pointer shrink-0 bg-slate-900 ${
                       idx === activePhotoIndex
                         ? 'border-brand-600 scale-105 shadow-md ring-2 ring-brand-500/30'
                         : 'border-slate-200 opacity-60 hover:opacity-100'
@@ -181,7 +236,7 @@ export default function VehicleDetailsModal({ vehicle, isOpen, onClose, onBookDi
                     <img
                       src={imgUrl}
                       alt={`Thumbnail ${idx + 1}`}
-                      className="w-full h-full object-cover"
+                      className="w-full h-full object-contain p-1 filter drop-shadow-xs"
                     />
                     <div className="absolute bottom-0.5 right-1 text-[9px] font-black text-white bg-black/60 px-1 rounded">
                       #{idx + 1}
@@ -226,6 +281,43 @@ export default function VehicleDetailsModal({ vehicle, isOpen, onClose, onBookDi
               <div className="text-xs font-black text-slate-900 truncate">{vehicle.permitType || 'All India AITP'}</div>
             </div>
           </div>
+
+          {/* If Trip Details Configured: Display Route & Distance Quote */}
+          {tripDetails && (
+            <div className="p-4 sm:p-5 rounded-3xl bg-brand-50/90 border border-brand-200 text-slate-900 space-y-3 shadow-sm">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-black text-brand-800 uppercase tracking-wider flex items-center gap-1.5">
+                  <MapPin className="w-4 h-4 text-brand-600" />
+                  <span>Your Trip Quote</span>
+                </span>
+                <span className="text-xs font-black text-brand-700 bg-white px-2.5 py-1 rounded-full border border-brand-200 shadow-xs">
+                  {tripDetails.estimatedDistance} KM • {tripDetails.estimatedDuration}
+                </span>
+              </div>
+
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-t border-brand-200/60 pt-2.5">
+                <div>
+                  <div className="text-xs font-extrabold text-slate-900">
+                    {tripDetails.pickupLocation} → {tripDetails.dropoffLocation}
+                  </div>
+                  <div className="text-[11px] text-slate-600 font-semibold flex items-center gap-2 pt-0.5">
+                    <span>👥 {tripDetails.passengers} Travelers</span>
+                    <span>•</span>
+                    <span>🧳 {tripDetails.largeBags} Bags</span>
+                    <span>•</span>
+                    <span>📅 {tripDetails.pickupDate}</span>
+                  </div>
+                </div>
+
+                <div className="text-left sm:text-right">
+                  <div className="text-[10px] text-slate-500 font-bold uppercase">Estimated Vehicle Total</div>
+                  <div className="text-xl font-black text-brand-700 font-display">
+                    ₹{(Math.round((parseFloat(vehicle.ratePerKm.replace(/[^0-9.]/g, '')) || 12) * tripDetails.estimatedDistance)).toLocaleString()}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Pricing & Commercial Transparency Box */}
           <div className="p-5 rounded-3xl bg-gradient-to-br from-slate-900 to-slate-950 text-white space-y-4 shadow-xl">

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import Logo from '../components/Common/Logo';
 import Footer from '../components/Footer/Footer';
+import { addFleetVehicle } from '../services/fleetService';
 import {
   Car,
   Building2,
@@ -29,15 +30,34 @@ import {
   RefreshCw,
   AlertCircle,
   FileCheck2,
-  Eye
+  Eye,
+  Gauge
 } from 'lucide-react';
 import { verifyVehicleWithRTO } from '../services/rtoVerificationService';
 import VehicleDetailsModal from '../components/Fleet/VehicleDetailsModal';
+import RCVerifierModal from '../components/RTO/RCVerifierModal';
 
 const BACKGROUND_VIDEO = '/videos/cape-goa-goa-indien-naturfotografie-verbl-ffende-natur.mp4';
 
 // Indian Commercial Vehicle Catalog for Fleet Operators
 const INDIAN_COMMERCIAL_CATALOG = [
+  {
+    modelId: 'tata_indigo',
+    brand: 'Tata Motors',
+    modelName: 'Tata Indigo eCS 1.4 CR4',
+    category: 'sedan',
+    categoryLabel: 'Economy Commercial Sedan',
+    seating: '4 + 1 Chauffeur',
+    fuel: 'Diesel',
+    bootSpace: '380L Boot Space (2 Large Bags)',
+    defaultRatePerKm: 10,
+    defaultDailyRate: 2700,
+    image: '/images/dzire.jpg',
+    images: [
+      '/images/dzire.jpg'
+    ],
+    description: 'Rugged 1.4L CR4 diesel workhorse known for durability, low maintenance, and reliable fleet taxi operations across India.'
+  },
   {
     modelId: 'innova_crysta',
     brand: 'Toyota',
@@ -400,6 +420,9 @@ export default function FleetPartnerHome({ user, onLogout }) {
   // View Vehicle Modal State
   const [selectedVehicleForViewer, setSelectedVehicleForViewer] = useState(null);
 
+  // Dedicated CarInfo-Style RC Verification Modal State
+  const [isRCVerifierModalOpen, setIsRCVerifierModalOpen] = useState(false);
+
   const agencyName = user?.fleetDetails?.agencyName || user?.name || 'Sahyadri Travels & Fleet';
   const operatingHub = user?.fleetDetails?.city || 'Mumbai / Pune (Maharashtra)';
 
@@ -414,25 +437,31 @@ export default function FleetPartnerHome({ user, onLogout }) {
     setVerificationResult(null);
 
     try {
+      // Verify plate against VAHAN / RTO directory with vehicle model specifications
       const result = await verifyVehicleWithRTO(plateInput, selectedModel);
       setIsVerifyingPlate(false);
       setVerificationResult(result);
     } catch (err) {
+      console.error('Vehicle verification error:', err);
       setIsVerifyingPlate(false);
     }
   };
 
   const handleAddVehicleToGarage = () => {
-    if (!selectedModel) return;
+    if (!selectedModel && !verificationResult) return;
 
     const formattedPlate = plateInput ? plateInput.toUpperCase().trim() : 'MH 12 AB 5544';
     const statePrefix = formattedPlate.slice(0, 2) || 'MH';
+    const resolvedModelName = verificationResult?.vehicleName || selectedModel?.modelName || 'Commercial Vehicle';
 
     const newVehicle = {
       id: `veh_${Date.now()}`,
-      modelId: selectedModel.modelId || 'innova_crysta',
-      modelName: selectedModel.modelName || 'Toyota Innova Crysta',
-      category: selectedModel.category || 'muv',
+      modelId: selectedModel?.modelId || 'innova_crysta',
+      modelName: resolvedModelName,
+      category: verificationResult?.vehicleType?.toLowerCase()?.includes('sedan') ? 'sedan'
+        : verificationResult?.vehicleType?.toLowerCase()?.includes('suv') ? 'suv'
+        : verificationResult?.vehicleType?.toLowerCase()?.includes('van') ? 'van'
+        : selectedModel?.category || 'muv',
       numberPlate: formattedPlate,
       stateCode: statePrefix,
       permitType: verificationResult?.permitType || 'All India Tourist Permit (AITP)',
@@ -448,14 +477,17 @@ export default function FleetPartnerHome({ user, onLogout }) {
         rating: 4.96,
         avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=150&q=80'
       },
-      ratePerKm: Number(ratePerKmInput) || selectedModel.defaultRatePerKm || 14,
+      ratePerKm: Number(ratePerKmInput) || selectedModel?.defaultRatePerKm || 14,
       minKmPerDay: 300,
-      fuel: selectedModel.fuel || 'Diesel',
-      seating: selectedModel.seating || '7 + 1',
-      image: selectedModel.image || 'https://images.unsplash.com/photo-1549399542-7e3f8b79c341?auto=format&fit=crop&w=800&q=80'
+      fuel: verificationResult?.fuelType || selectedModel?.fuel || 'Diesel',
+      seating: verificationResult?.seatingCapacity || selectedModel?.seating || '7 + 1',
+      vehicleAge: verificationResult?.vehicleAge || 'Active',
+      image: selectedModel?.image || 'https://images.unsplash.com/photo-1549399542-7e3f8b79c341?auto=format&fit=crop&w=800&q=80',
+      images: selectedModel?.images || [selectedModel?.image || 'https://images.unsplash.com/photo-1549399542-7e3f8b79c341?auto=format&fit=crop&w=800&q=80']
     };
 
     setGarageVehicles((prev) => [newVehicle, ...prev]);
+    addFleetVehicle(newVehicle).catch((err) => console.error('Error saving vehicle to backend:', err));
     setIsAddVehicleOpen(false);
     setVerificationResult(null);
     setPlateInput('MH 12 AB 5544');
@@ -525,7 +557,7 @@ export default function FleetPartnerHome({ user, onLogout }) {
                   </div>
                   <div className="text-[10px] text-brand-700 font-bold flex items-center gap-1">
                     <ShieldCheck className="w-2.5 h-2.5 text-emerald-600" />
-                    <span>Commercial Fleet Partner</span>
+                    <span>{user?.phone ? `📱 ${user.phone}` : 'Commercial Fleet Partner'}</span>
                   </div>
                 </div>
                 <button
@@ -677,6 +709,15 @@ export default function FleetPartnerHome({ user, onLogout }) {
                     Urbania & Vans
                   </button>
                 </div>
+
+                <button
+                  type="button"
+                  onClick={() => setIsRCVerifierModalOpen(true)}
+                  className="flex items-center gap-1.5 px-3.5 py-2 rounded-2xl bg-white/70 hover:bg-white text-slate-900 border border-slate-300 text-xs font-black shadow-xs transition-all cursor-pointer"
+                >
+                  <ShieldCheck className="w-4 h-4 text-emerald-600" />
+                  <span>Lookup Any Car RC</span>
+                </button>
 
                 <button
                   onClick={() => setIsAddVehicleOpen(true)}
@@ -888,8 +929,8 @@ export default function FleetPartnerHome({ user, onLogout }) {
                 1. Select Indian Commercial Vehicle Model
               </label>
               
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                {INDIAN_COMMERCIAL_CATALOG.slice(0, 6).map((model) => (
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 max-h-60 overflow-y-auto pr-1">
+                {INDIAN_COMMERCIAL_CATALOG.map((model) => (
                   <div
                     key={model.modelId}
                     onClick={() => {
@@ -960,37 +1001,127 @@ export default function FleetPartnerHome({ user, onLogout }) {
 
                 </div>
 
-                {/* Live RTO Verification Output Result */}
+                {/* 🌟 CarInfo-Style Verified Vehicle Details Card */}
                 {verificationResult && (
-                  <div className="p-4 rounded-2xl bg-emerald-50 border border-emerald-300 text-xs space-y-2.5 animate-fadeIn">
-                    <div className="flex items-center justify-between border-b border-emerald-200 pb-2">
-                      <div className="flex items-center gap-2 text-emerald-800 font-extrabold">
-                        <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-                        <span>VAHAN Commercial Registry: Active & Valid</span>
+                  <div className="rounded-2xl border-2 border-emerald-500/80 bg-gradient-to-b from-emerald-50/50 via-white to-white p-4 sm:p-5 text-xs space-y-4 shadow-lg animate-fadeIn">
+                    
+                    {/* Top Identity Header */}
+                    <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 border-b border-emerald-200/80 pb-3.5">
+                      <div className="space-y-1">
+                        <div className="flex flex-wrap items-center gap-1.5">
+                          <span className="px-2 py-0.5 rounded-full bg-emerald-600 text-white text-[9px] font-black uppercase tracking-wider flex items-center gap-1">
+                            <CheckCircle2 className="w-2.5 h-2.5" />
+                            <span>VAHAN VERIFIED</span>
+                          </span>
+                          <span className="px-2 py-0.5 rounded-full bg-slate-900 text-white text-[9px] font-black uppercase tracking-wider">
+                            {verificationResult.vehicleType || 'COMMERCIAL VEHICLE'}
+                          </span>
+                          <span className="px-2 py-0.5 rounded-full bg-blue-100 text-blue-800 text-[9px] font-black uppercase border border-blue-200">
+                            {verificationResult.fuelType}
+                          </span>
+                        </div>
+
+                        {/* Prominent Vehicle Name */}
+                        <div className="text-lg sm:text-xl font-black font-display text-slate-950 tracking-tight pt-0.5">
+                          {verificationResult.vehicleName || `${verificationResult.maker} ${verificationResult.model}`}
+                        </div>
+
+                        <div className="text-[11px] text-slate-600 font-semibold flex items-center gap-1">
+                          <MapPin className="w-3 h-3 text-brand-600 shrink-0" />
+                          <span>{verificationResult.rtoOffice} • {verificationResult.state}</span>
+                        </div>
                       </div>
-                      <span className="px-2.5 py-0.5 rounded-md bg-emerald-600 text-white text-[10px] font-black uppercase">
-                        100% Verified
-                      </span>
+
+                      {/* Number Plate Seal */}
+                      <div className="flex items-center rounded-lg bg-amber-400 border border-amber-500 px-2.5 py-1 shadow-2xs self-start sm:self-auto shrink-0">
+                        <span className="text-[9px] font-black text-slate-950 border-r border-slate-950/30 pr-1.5 mr-1.5">IND</span>
+                        <span className="text-xs font-black font-mono text-slate-950 tracking-wider">
+                          {verificationResult.plateNumber || verificationResult.plate}
+                        </span>
+                      </div>
                     </div>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-[11px] text-slate-700">
-                      <div>
-                        <span className="font-bold text-slate-500">Commercial Registration:</span>
-                        <div className="font-black text-slate-900 font-mono">{verificationResult.plateNumber || verificationResult.plate}</div>
+                    {/* 4 CarInfo-Style Pillars */}
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+                      
+                      {/* 1. Exact Vehicle Age */}
+                      <div className="p-2.5 rounded-xl bg-white border border-emerald-200/90 shadow-2xs space-y-0.5">
+                        <div className="flex items-center justify-between text-slate-400">
+                          <span className="text-[9px] font-extrabold uppercase text-slate-500">Vehicle Age</span>
+                          <Calendar className="w-3.5 h-3.5 text-emerald-600" />
+                        </div>
+                        <div className="text-xs font-black text-slate-900">
+                          {verificationResult.vehicleAge || 'Active'}
+                        </div>
+                        <div className="text-[9px] font-semibold text-slate-400 truncate">
+                          Reg: {verificationResult.registrationDate}
+                        </div>
                       </div>
-                      <div>
-                        <span className="font-bold text-slate-500">RTO Jurisdiction & State:</span>
-                        <div className="font-black text-slate-900">{verificationResult.rtoOffice}</div>
+
+                      {/* 2. Vehicle Body Type */}
+                      <div className="p-2.5 rounded-xl bg-white border border-emerald-200/90 shadow-2xs space-y-0.5">
+                        <div className="flex items-center justify-between text-slate-400">
+                          <span className="text-[9px] font-extrabold uppercase text-slate-500">Body Type</span>
+                          <Car className="w-3.5 h-3.5 text-brand-600" />
+                        </div>
+                        <div className="text-xs font-black text-slate-900 truncate">
+                          {verificationResult.vehicleType || 'Passenger Vehicle'}
+                        </div>
+                        <div className="text-[9px] font-semibold text-slate-400 truncate">
+                          {verificationResult.seatingCapacity}
+                        </div>
                       </div>
-                      <div>
-                        <span className="font-bold text-slate-500">Vehicle Maker & Class:</span>
-                        <div className="font-black text-slate-900">{verificationResult.maker} • {verificationResult.model}</div>
+
+                      {/* 3. Engine & CC */}
+                      <div className="p-2.5 rounded-xl bg-white border border-emerald-200/90 shadow-2xs space-y-0.5">
+                        <div className="flex items-center justify-between text-slate-400">
+                          <span className="text-[9px] font-extrabold uppercase text-slate-500">Engine / CC</span>
+                          <Gauge className="w-3.5 h-3.5 text-purple-600" />
+                        </div>
+                        <div className="text-xs font-black text-slate-900 truncate">
+                          {verificationResult.engineCapacity || 'Standard CC'}
+                        </div>
+                        <div className="text-[9px] font-bold text-purple-700 truncate">
+                          {verificationResult.fuelType}
+                        </div>
                       </div>
-                      <div>
-                        <span className="font-bold text-slate-500">Permit & Fitness Expiry:</span>
-                        <div className="font-black text-emerald-700">{verificationResult.permitType} (Valid: {verificationResult.fitnessValidTill})</div>
+
+                      {/* 4. RTO Office */}
+                      <div className="p-2.5 rounded-xl bg-white border border-emerald-200/90 shadow-2xs space-y-0.5">
+                        <div className="flex items-center justify-between text-slate-400">
+                          <span className="text-[9px] font-extrabold uppercase text-slate-500">RTO Authority</span>
+                          <Building2 className="w-3.5 h-3.5 text-amber-600" />
+                        </div>
+                        <div className="text-xs font-black text-slate-900 truncate" title={verificationResult.rtoOffice}>
+                          {verificationResult.rtoOffice?.split('(')[0] || verificationResult.rtoOffice}
+                        </div>
+                        <div className="text-[9px] font-semibold text-slate-400 truncate">
+                          {verificationResult.state}
+                        </div>
+                      </div>
+
+                    </div>
+
+                    {/* Detailed Specifications Strip */}
+                    <div className="p-3 rounded-xl bg-slate-50 border border-slate-200/80 space-y-1.5 text-[11px]">
+                      <div className="flex items-center justify-between">
+                        <span className="text-slate-500 font-medium">Engine Configuration:</span>
+                        <span className="font-extrabold text-slate-900 text-right truncate max-w-[220px]">{verificationResult.engineType}</span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-slate-500 font-medium">Commercial Permit:</span>
+                        <span className="font-bold text-slate-900">{verificationResult.permitType}</span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-slate-500 font-medium">Fitness & Road Tax:</span>
+                        <span className="font-extrabold text-emerald-700">Valid till {verificationResult.fitnessValidTill} (PASS)</span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-slate-500 font-medium">Registered Owner:</span>
+                        <span className="font-bold text-slate-900">{verificationResult.ownerName}</span>
                       </div>
                     </div>
+
                   </div>
                 )}
 
@@ -1070,6 +1201,12 @@ export default function FleetPartnerHome({ user, onLogout }) {
         vehicle={selectedVehicleForViewer}
         isOpen={Boolean(selectedVehicleForViewer)}
         onClose={() => setSelectedVehicleForViewer(null)}
+      />
+
+      {/* CarInfo-Style Instant RC & Specs Verifier Modal */}
+      <RCVerifierModal
+        isOpen={isRCVerifierModalOpen}
+        onClose={() => setIsRCVerifierModalOpen(false)}
       />
 
     </div>

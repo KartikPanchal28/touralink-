@@ -1,6 +1,14 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Logo from '../components/Common/Logo';
 import Footer from '../components/Footer/Footer';
+import { subscribeToDrivers } from '../services/driverService';
+import WhatsAppNotificationModal from '../components/Common/WhatsAppNotificationModal';
+import { dispatchBookingWhatsAppAlerts } from '../services/whatsappNotificationService';
+import RouteMapPreview from '../components/Common/RouteMapPreview';
+
+import ErrorBoundary from '../components/Common/ErrorBoundary';
+import InteractiveRouteModal from '../components/Common/InteractiveRouteModal';
+import DriverDetailsModal from '../components/Drivers/DriverDetailsModal';
 import { 
   UserCheck, 
   ShieldCheck, 
@@ -15,129 +23,52 @@ import {
   Languages, 
   CheckCircle2, 
   LogOut,
-  PhoneCall
+  PhoneCall,
+  Maximize2,
+  Eye,
+  MessageSquare
 } from 'lucide-react';
 
 const BACKGROUND_VIDEO = '/videos/cape-goa-goa-indien-naturfotografie-verbl-ffende-natur.mp4';
 
-const DRIVERS_DATA = [
-  {
-    id: 'ramesh_shinde',
-    name: 'Ramesh Shinde',
-    location: 'Pune / Mumbai (Maharashtra)',
-    category: 'ghats',
-    categoryLabel: 'Ghats & Hill Roads Specialist',
-    image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=400&q=80',
-    experience: '14 Years Driving Experience',
-    badge: 'Police Verified • MH-12-8821',
-    specialty: 'Sahyadri Ghats • Mahabaleshwar • Lonavala • Mumbai-Goa Highway',
-    carExpertise: 'Manual & Automatic SUVs • Innova, Ertiga, Fortuner, Sedans',
-    languages: 'Marathi, Hindi, English',
-    dailyRate: '₹900 / Day',
-    outstationRate: '₹1,200 / Night Outstation',
-    rating: '4.98',
-    trips: '1,420+ safe trips',
-    bio: 'Specialist in hairpin ghat curves, night drives, and rainy monsoon mountain routes. Zero accident record over 14 years.'
-  },
-  {
-    id: 'sameer_sawant',
-    name: 'Sameer Sawant',
-    location: 'Panaji / Margao (Goa)',
-    category: 'coastal',
-    categoryLabel: 'Goa Coastline & Tourist Guide',
-    image: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=400&q=80',
-    experience: '10 Years Driving Experience',
-    badge: 'Commercial Badge • GA-01-4419',
-    specialty: 'North & South Goa • Dudhsagar • Gokarna Coastal Highway',
-    carExpertise: 'Automatic Sedans, Hatchbacks, Premium 7-Seaters',
-    languages: 'Konkani, Hindi, English, Marathi',
-    dailyRate: '₹950 / Day',
-    outstationRate: '₹1,300 / Night Outstation',
-    rating: '4.96',
-    trips: '980+ safe trips',
-    bio: 'Calm, polite chauffeur with expert knowledge of scenic coastal hidden spots, heritage churches, and smooth beach route drives.'
-  },
-  {
-    id: 'praful_patel',
-    name: 'Praful Patel',
-    location: 'Ahmedabad / Surat (Gujarat)',
-    category: 'highway',
-    categoryLabel: 'Long Highway & Outstation Expert',
-    image: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=400&q=80',
-    experience: '16 Years Driving Experience',
-    badge: 'Police Verified • GJ-01-9032',
-    specialty: 'Statue of Unity • Somnath • Rann of Kutch • Expressway Long Hauls',
-    carExpertise: 'All Manual & Automatic Vehicles • Heavy SUVs & Fleets',
-    languages: 'Gujarati, Hindi, English',
-    dailyRate: '₹850 / Day',
-    outstationRate: '₹1,150 / Night Outstation',
-    rating: '4.95',
-    trips: '1,890+ safe trips',
-    bio: 'Veteran long-distance highway chauffeur. Punctual, non-smoker, and experienced in smooth cruising on National Expressways.'
-  },
-  {
-    id: 'manjunath_gowda',
-    name: 'Manjunath Gowda',
-    location: 'Bengaluru / Mysuru (Karnataka)',
-    category: 'ghats',
-    categoryLabel: 'Coorg & Western Ghats Specialist',
-    image: 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&w=400&q=80',
-    experience: '12 Years Driving Experience',
-    badge: 'Police Verified • KA-05-6671',
-    specialty: 'Bengaluru ⇄ Coorg • Mysuru Palace • Ooty Hills • Hampi Trail',
-    carExpertise: 'Fortuner 4x4, Innova Crysta, Scorpio, Automatic Cars',
-    languages: 'Kannada, Telugu, Hindi, English',
-    dailyRate: '₹900 / Day',
-    outstationRate: '₹1,250 / Night Outstation',
-    rating: '4.97',
-    trips: '1,150+ safe trips',
-    bio: 'Experienced in coffee estate rugged trails and sharp hill inclines. Known for punctual early morning airport and outstation pickups.'
-  },
-  {
-    id: 'vinod_kamat',
-    name: 'Vinod Kamat',
-    location: 'Mumbai / Navi Mumbai (Maharashtra)',
-    category: 'luxury',
-    categoryLabel: 'Luxury & Automatic Chauffeur',
-    image: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=400&q=80',
-    experience: '15 Years Driving Experience',
-    badge: 'VIP Badge Verified • MH-02-3118',
-    specialty: 'Mumbai Sea Link • Pune Expressway • Corporate & Wedding Drives',
-    carExpertise: 'Mercedes-Benz, BMW, Audi, Fortuner, Lexus, Automatic',
-    languages: 'Hindi, Marathi, English',
-    dailyRate: '₹1,100 / Day',
-    outstationRate: '₹1,500 / Night Outstation',
-    rating: '4.99',
-    trips: '2,100+ safe trips',
-    bio: 'Professional corporate chauffeur. Well-groomed, fluent in English, and master of high-end luxury automatic vehicles.'
-  },
-  {
-    id: 'dinesh_solanki',
-    name: 'Dinesh Solanki',
-    location: 'Vadodara / Rajkot (Gujarat)',
-    category: 'highway',
-    categoryLabel: 'Night Drive & Long Distance Pro',
-    image: 'https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?auto=format&fit=crop&w=400&q=80',
-    experience: '11 Years Driving Experience',
-    badge: 'Police Verified • GJ-06-7782',
-    specialty: 'Zero-Fatigue Overnight Highway Trips • Mumbai-Gujarat Corridor',
-    carExpertise: 'Sedans, MUVs, Commercial Pickups & Fleets',
-    languages: 'Gujarati, Hindi',
-    dailyRate: '₹950 / Day',
-    outstationRate: '₹1,200 / Night Outstation',
-    rating: '4.93',
-    trips: '1,340+ safe trips',
-    bio: 'Trained in defensive night driving and alert long-distance cruising. Perfect for urgent overnight intercity transfers.'
-  }
-];
+import { DRIVERS_DATA } from '../data/driversData';
+export { DRIVERS_DATA };
 
-export default function DriversPage({ user, onLogout, onBackToHome, onNavigateToFleet }) {
+export default function DriversPage({ 
+  user, 
+  onLogout, 
+  onBackToHome, 
+  onNavigateToFleet,
+  tripDetails,
+  onEditTrip,
+  onSelectDriver
+}) {
+  const [driversList, setDriversList] = useState(DRIVERS_DATA);
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [selectedDriverForModal, setSelectedDriverForModal] = useState(null);
+  const [whatsAppModalOpen, setWhatsAppModalOpen] = useState(false);
+  const [whatsAppDispatchRecord, setWhatsAppDispatchRecord] = useState(null);
+  const [isRouteModalOpen, setIsRouteModalOpen] = useState(false);
+
+  // Subscribe to real-time drivers, preserving rich verification & KYC data
+  useEffect(() => {
+    const unsub = subscribeToDrivers((liveDrivers) => {
+      if (liveDrivers && liveDrivers.length > 0) {
+        const merged = DRIVERS_DATA.map((staticDriver) => {
+          const live = liveDrivers.find((ld) => ld.id === staticDriver.id);
+          return live ? { ...staticDriver, ...live } : staticDriver;
+        });
+        setDriversList(merged);
+      }
+    });
+    return () => {
+      if (typeof unsub === 'function') unsub();
+    };
+  }, []);
 
   const filteredDrivers = selectedCategory === 'all'
-    ? DRIVERS_DATA
-    : DRIVERS_DATA.filter((driver) => driver.category === selectedCategory);
+    ? driversList
+    : driversList.filter((driver) => driver.category === selectedCategory);
 
   return (
     <div className="relative min-h-screen font-sans text-slate-900 selection:bg-brand-500 selection:text-white">
@@ -176,12 +107,23 @@ export default function DriversPage({ user, onLogout, onBackToHome, onNavigateTo
                 <span>Back to Overview</span>
               </button>
 
+              {onNavigateToFleet && (
+                <button
+                  onClick={onNavigateToFleet}
+                  className="hidden md:flex items-center gap-2 px-4 py-2 rounded-full bg-white/70 backdrop-blur-xl border border-white/60 text-xs font-extrabold text-slate-800 shadow-xs hover:bg-white transition-all cursor-pointer"
+                >
+                  <Car className="w-3.5 h-3.5 text-brand-600" />
+                  <span>Switch to Car Rentals</span>
+                </button>
+              )}
+
               <button
-                onClick={onNavigateToFleet}
-                className="hidden md:flex items-center gap-2 px-4 py-2 rounded-full bg-slate-950 text-white text-xs font-extrabold shadow-md hover:bg-slate-850 transition-all cursor-pointer"
+                onClick={() => onLogout?.('driver_partner', 'partner_type_selection')}
+                className="flex items-center gap-1.5 px-3.5 py-2 rounded-full bg-slate-950 text-white hover:bg-slate-850 text-xs font-black shadow-sm transition-all cursor-pointer shrink-0"
               >
-                <Car className="w-3.5 h-3.5 text-brand-400" />
-                <span>View Fleet Cabs</span>
+                <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
+                <span className="hidden sm:inline">Join Partner (Driver / Fleet)</span>
+                <span className="sm:hidden">Join Partner</span>
               </button>
 
               <div className="flex items-center gap-3 pl-3 pr-2 py-1.5 rounded-full bg-white/50 backdrop-blur-xl border border-white/60 shadow-xs hover:bg-white/70 transition-all">
@@ -199,8 +141,8 @@ export default function DriversPage({ user, onLogout, onBackToHome, onNavigateTo
                   </div>
                 </div>
                 <button
-                  onClick={onLogout}
-                  title="Sign Out"
+                  onClick={() => onLogout?.('driver_partner', 'partner_type_selection')}
+                  title="Sign Out / Switch to Partner"
                   className="p-1.5 rounded-full hover:bg-white/80 text-slate-500 hover:text-red-500 transition-colors cursor-pointer"
                 >
                   <LogOut className="w-3.5 h-3.5" />
@@ -212,16 +154,90 @@ export default function DriversPage({ user, onLogout, onBackToHome, onNavigateTo
         </header>
 
         {/* Main Driver Directory Content */}
-        <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 space-y-10 flex-1 w-full">
+        <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10 space-y-8 flex-1 w-full">
           
+          {/* Active Trip Requirement & Route Context Banner with Real OpenStreetMap Preview */}
+          {tripDetails && (
+            <section className="rounded-3xl bg-white/90 backdrop-blur-2xl border border-adventure-200/90 shadow-xl p-4 sm:p-6 flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-5 animate-fadeIn">
+              <div className="flex items-start sm:items-center gap-3.5 flex-1">
+                <div className="w-11 h-11 rounded-2xl bg-adventure-500 text-white flex items-center justify-center shadow-md shadow-adventure-500/20 shrink-0">
+                  <UserCheck className="w-5 h-5" />
+                </div>
+                <div className="space-y-1">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="text-xs font-black uppercase text-adventure-700 tracking-wider bg-adventure-50 px-2 py-0.5 rounded-md border border-adventure-200">
+                      Chauffeur Duty Route
+                    </span>
+                    <span className="text-sm sm:text-base font-extrabold text-slate-900">
+                      {tripDetails.pickupLocation} → {tripDetails.dropoffLocation}
+                    </span>
+                    {tripDetails.additionalStops?.length > 0 && (
+                      <span className="text-[11px] font-bold text-amber-700 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200">
+                        +{tripDetails.additionalStops.length} En-Route Stop{tripDetails.additionalStops.length > 1 ? 's' : ''}
+                      </span>
+                    )}
+                  </div>
+
+                  <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-slate-600 font-semibold">
+                    <span className="flex items-center gap-1">
+                      <Sparkles className="w-3.5 h-3.5 text-adventure-600" />
+                      <span>{tripDetails.estimatedDistance} KM Circuit</span>
+                    </span>
+                    <span>•</span>
+                    <span>🚗 Your Car: {tripDetails.carBrandModel || tripDetails.ownCarType?.toUpperCase() || 'PERSONAL CAR'} ({tripDetails.transmission || 'Automatic'})</span>
+                    <span>•</span>
+                    <span>📅 {tripDetails.pickupDate}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Dedicated Driver Route OpenStreetMap Preview */}
+              <div className="w-full lg:w-72 shrink-0">
+                <RouteMapPreview
+                  startCoords={tripDetails.pickupCoords || [73.8567, 18.5204]}
+                  endCoords={tripDetails.dropoffCoords || [73.6586, 17.9237]}
+                  routeGeometry={tripDetails.liveRouteData?.geometry}
+                  onClick={() => setIsRouteModalOpen(true)}
+                />
+              </div>
+
+              <div className="flex flex-row lg:flex-col items-center justify-end gap-2 shrink-0">
+                <button
+                  type="button"
+                  onClick={() => setIsRouteModalOpen(true)}
+                  className="w-full px-4 py-2.5 rounded-2xl bg-white border border-slate-300 hover:bg-slate-50 text-slate-800 font-extrabold text-xs shadow-xs transition-all cursor-pointer flex items-center justify-center gap-1.5 active:scale-95"
+                >
+                  <Maximize2 className="w-3.5 h-3.5 text-adventure-600" />
+                  <span>Inspect Route & Stops</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={onEditTrip}
+                  className="w-full px-4 py-2.5 rounded-2xl bg-slate-900 hover:bg-slate-800 text-white font-extrabold text-xs shadow-md transition-all cursor-pointer flex items-center justify-center gap-1.5 active:scale-95"
+                >
+                  <span>Edit Requirements</span>
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            </section>
+          )}
+
           {/* Header Banner */}
-          <section className="relative rounded-3xl overflow-hidden border border-white/40 bg-white/35 backdrop-blur-2xl saturate-[190%] shadow-[0_8px_32px_rgba(0,0,0,0.05)] p-6 sm:p-10 space-y-5 transition-all">
+          <section className="relative rounded-3xl overflow-hidden border border-white/40 bg-white/35 backdrop-blur-2xl saturate-[190%] shadow-[0_8px_32px_rgba(0,0,0,0.05)] p-6 sm:p-8 space-y-5 transition-all">
             
             <div className="flex flex-wrap items-center justify-between gap-4">
               <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/60 backdrop-blur-xl border border-white/60 text-xs font-bold text-slate-800 shadow-xs">
                 <Sparkles className="w-3.5 h-3.5 text-adventure-600" />
                 <span>100% Police & KYC Verified Chauffeur Network</span>
               </div>
+
+              <button
+                onClick={() => onLogout?.('driver_partner', 'partner_type_selection')}
+                className="hidden sm:inline-flex items-center gap-2 px-4 py-2 rounded-2xl bg-slate-950 hover:bg-slate-850 text-white text-xs font-black shadow-md transition-all cursor-pointer hover:shadow-lg active:scale-95"
+              >
+                <ShieldCheck className="w-4 h-4 text-emerald-400" />
+                <span>Join as Partner • Choose Driver or Fleet →</span>
+              </button>
 
               <div className="flex items-center gap-2 sm:hidden">
                 <button
@@ -231,21 +247,23 @@ export default function DriversPage({ user, onLogout, onBackToHome, onNavigateTo
                   <ArrowLeft className="w-3.5 h-3.5" />
                   <span>Back</span>
                 </button>
-                <button
-                  onClick={onNavigateToFleet}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-950 text-white text-xs font-bold"
-                >
-                  <Car className="w-3.5 h-3.5 text-brand-400" />
-                  <span>Fleet</span>
-                </button>
+                {onNavigateToFleet && (
+                  <button
+                    onClick={onNavigateToFleet}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/90 border border-slate-200 text-slate-800 text-xs font-bold shadow-xs"
+                  >
+                    <Car className="w-3.5 h-3.5 text-brand-600" />
+                    <span>Cabs</span>
+                  </button>
+                )}
               </div>
             </div>
 
-            <div className="max-w-3xl space-y-3">
-              <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold font-display text-slate-900 tracking-tight leading-tight">
-                Verified Personal Chauffeurs
+            <div className="max-w-3xl space-y-2">
+              <h1 className="text-2xl sm:text-4xl font-extrabold font-display text-slate-900 tracking-tight leading-tight">
+                {tripDetails ? 'Verified Chauffeurs for Your Drive' : 'Verified Personal Chauffeurs'}
               </h1>
-              <p className="text-sm sm:text-base text-slate-800 leading-relaxed font-medium">
+              <p className="text-xs sm:text-sm text-slate-800 leading-relaxed font-medium">
                 Hire trusted drivers for your personal car or commercial fleet across Maharashtra, Goa, Gujarat & Karnataka. 
                 <strong className="text-slate-950 font-bold"> Direct driver rates starting at ₹850/day with 0% middleman fees.</strong>
               </p>
@@ -278,99 +296,162 @@ export default function DriversPage({ user, onLogout, onBackToHome, onNavigateTo
 
           {/* Drivers Grid */}
           <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 items-stretch">
-            {filteredDrivers.map((driver) => (
-              <div
-                key={driver.id}
-                className="relative rounded-3xl overflow-hidden border border-slate-200 bg-white/90 backdrop-blur-xl shadow-xl shadow-slate-200/50 hover:bg-white hover:border-slate-300 hover:shadow-2xl transition-all duration-300 flex flex-col justify-between group"
-              >
-                {/* Driver Profile Header */}
-                <div className="p-5 sm:p-6 border-b border-slate-100 flex items-start justify-between gap-4">
-                  <div className="flex items-center gap-3.5">
-                    <img
-                      src={driver.image}
-                      alt={driver.name}
-                      className="w-14 h-14 rounded-2xl object-cover border-2 border-adventure-500 shadow-sm"
-                    />
-                    <div>
-                      <h3 className="text-base font-black text-slate-900 font-display">
-                        {driver.name}
-                      </h3>
-                      <div className="flex items-center gap-1.5 text-xs text-slate-500 font-semibold mt-0.5">
-                        <MapPin className="w-3.5 h-3.5 text-brand-600 shrink-0" />
-                        <span className="truncate">{driver.location}</span>
+            {filteredDrivers.map((driver) => {
+              const isDriverSelected = tripDetails?.selectedDriver?.id === driver.id || 
+                tripDetails?.assignedDriverName?.toLowerCase() === driver.name.toLowerCase();
+
+              return (
+                <div
+                  key={driver.id}
+                  className={`relative rounded-3xl overflow-hidden border bg-white/90 backdrop-blur-xl shadow-xl transition-all duration-300 flex flex-col justify-between group ${
+                    isDriverSelected
+                      ? 'border-adventure-500 ring-2 ring-adventure-500/40 shadow-2xl'
+                      : 'border-slate-200 hover:bg-white hover:border-slate-300 hover:shadow-2xl'
+                  }`}
+                >
+                  {/* Active Selected Driver Badge */}
+                  {isDriverSelected && (
+                    <div className="absolute top-4 left-1/2 -translate-x-1/2 z-20 px-3 py-1 rounded-full bg-emerald-600 text-white text-[10px] font-black shadow-lg flex items-center gap-1 animate-pulse">
+                      <CheckCircle2 className="w-3.5 h-3.5" />
+                      <span>Active On Main Page Map</span>
+                    </div>
+                  )}
+
+                  {/* Driver Profile Header - Click to open Full Real KYC & Profile */}
+                  <div 
+                    onClick={() => setSelectedDriverForModal(driver)}
+                    className="p-5 sm:p-6 border-b border-slate-100 flex items-start justify-between gap-4 cursor-pointer hover:bg-slate-50/70 transition-colors"
+                    title="Click to view full real KYC, vehicle mastery & customer reviews"
+                  >
+                    <div className="flex items-center gap-3.5">
+                      <img
+                        src={driver.image}
+                        alt={driver.name}
+                        className="w-14 h-14 rounded-2xl object-cover border-2 border-adventure-500 shadow-sm"
+                      />
+                      <div>
+                        <h3 className="text-base font-black text-slate-900 font-display flex items-center gap-2">
+                          <span>{driver.name}</span>
+                          <span className="text-[10px] font-bold text-adventure-600 bg-adventure-50 px-1.5 py-0.5 rounded border border-adventure-200">
+                            Details
+                          </span>
+                        </h3>
+                        <div className="flex items-center gap-1.5 text-xs text-slate-500 font-semibold mt-0.5">
+                          <MapPin className="w-3.5 h-3.5 text-brand-600 shrink-0" />
+                          <span className="truncate">{driver.location}</span>
+                        </div>
                       </div>
                     </div>
+
+                    {/* Rating */}
+                    <div className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-slate-900 text-white text-xs font-bold shadow-xs shrink-0">
+                      <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
+                      <span>{driver.rating}</span>
+                    </div>
                   </div>
 
-                  {/* Rating */}
-                  <div className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-slate-900 text-white text-xs font-bold shadow-xs shrink-0">
-                    <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
-                    <span>{driver.rating}</span>
+                  {/* Driver Credentials & Highlights */}
+                  <div className="p-5 sm:p-6 space-y-4 flex-1 flex flex-col justify-between">
+                    
+                    {/* Badge & Experience */}
+                    <div className="space-y-2 text-xs">
+                      <div className="flex items-center gap-2 p-2 rounded-xl bg-emerald-50 border border-emerald-200/80 text-emerald-800 font-bold">
+                        <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0" />
+                        <span className="truncate">{driver.badge}</span>
+                      </div>
+
+                      <div className="flex items-center gap-2 p-2 rounded-xl bg-slate-50 border border-slate-200/60 text-slate-700 font-semibold">
+                        <Award className="w-4 h-4 text-adventure-600 shrink-0" />
+                        <span>{driver.experience}</span>
+                      </div>
+                    </div>
+
+                    {/* Specialty Routes */}
+                    <div className="p-3 rounded-2xl bg-brand-50/70 border border-brand-100 text-xs space-y-1">
+                      <div className="font-extrabold text-brand-800 flex items-center gap-1">
+                        <span>Key Expertise:</span>
+                      </div>
+                      <p className="text-slate-700 font-medium leading-relaxed">
+                        {driver.specialty}
+                      </p>
+                    </div>
+
+                    {/* Languages & Car Types */}
+                    <div className="grid grid-cols-2 gap-2 text-xs text-slate-600 font-semibold">
+                      <div className="p-2 rounded-xl bg-slate-50 border border-slate-200/60 truncate">
+                        <span className="text-slate-400 text-[10px] block uppercase font-bold">Languages</span>
+                        {driver.languages}
+                      </div>
+                      <div className="p-2 rounded-xl bg-slate-50 border border-slate-200/60 truncate">
+                        <span className="text-slate-400 text-[10px] block uppercase font-bold">Cars Handled</span>
+                        Manual & Auto
+                      </div>
+                    </div>
+
+                    {/* Pricing Breakdown Box */}
+                    <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200 space-y-1">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs text-slate-500 font-medium">Daily Chauffeur Charge</span>
+                        <span className="text-base font-black text-slate-900">{driver.dailyRate}</span>
+                      </div>
+                      <div className="flex items-center justify-between text-xs text-slate-500">
+                        <span>Outstation Night Rate</span>
+                        <span className="font-bold text-slate-700">{driver.outstationRate}</span>
+                      </div>
+                    </div>
+
+                    {/* Action Buttons: Full KYC Details, Select for Map & Direct Hire */}
+                    <div className="space-y-2 pt-1">
+                      <button 
+                        type="button"
+                        onClick={() => setSelectedDriverForModal(driver)}
+                        className="w-full py-2.5 px-4 rounded-2xl font-black text-xs transition-all flex items-center justify-center gap-2 cursor-pointer bg-white hover:bg-slate-50 text-slate-800 border border-slate-200 shadow-xs hover:border-slate-300"
+                      >
+                        <Eye className="w-4 h-4 text-adventure-600" />
+                        <span>View Real KYC, Routes & Profile</span>
+                      </button>
+
+                      <div className="grid grid-cols-2 gap-2">
+                        <button 
+                          type="button"
+                          onClick={() => onSelectDriver?.(driver)}
+                          className={`py-2.5 px-3 rounded-2xl font-black text-xs transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-xs truncate ${
+                            isDriverSelected
+                              ? 'bg-emerald-50 text-emerald-800 border-2 border-emerald-500'
+                              : 'bg-adventure-50 hover:bg-adventure-100 text-adventure-800 border border-adventure-200'
+                          }`}
+                        >
+                          {isDriverSelected ? (
+                            <>
+                              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                              <span className="truncate">Active on Map</span>
+                            </>
+                          ) : (
+                            <>
+                              <UserCheck className="w-3.5 h-3.5 text-adventure-600 shrink-0" />
+                              <span className="truncate">Select for Map</span>
+                            </>
+                          )}
+                        </button>
+
+                        <button 
+                          type="button"
+                          onClick={() => {
+                            onSelectDriver?.(driver);
+                            setSelectedDriverForModal(driver);
+                          }}
+                          className="py-2.5 px-3 rounded-2xl font-black text-xs text-white bg-slate-950 hover:bg-slate-850 active:scale-[0.98] transition-all flex items-center justify-center gap-1.5 shadow-md shadow-slate-950/20 group cursor-pointer truncate"
+                        >
+                          <span className="truncate">Hire Chauffeur</span>
+                          <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5 shrink-0" />
+                        </button>
+                      </div>
+                    </div>
+
                   </div>
                 </div>
-
-                {/* Driver Credentials & Highlights */}
-                <div className="p-5 sm:p-6 space-y-4 flex-1 flex flex-col justify-between">
-                  
-                  {/* Badge & Experience */}
-                  <div className="space-y-2 text-xs">
-                    <div className="flex items-center gap-2 p-2 rounded-xl bg-emerald-50 border border-emerald-200/80 text-emerald-800 font-bold">
-                      <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0" />
-                      <span className="truncate">{driver.badge}</span>
-                    </div>
-
-                    <div className="flex items-center gap-2 p-2 rounded-xl bg-slate-50 border border-slate-200/60 text-slate-700 font-semibold">
-                      <Award className="w-4 h-4 text-adventure-600 shrink-0" />
-                      <span>{driver.experience}</span>
-                    </div>
-                  </div>
-
-                  {/* Specialty Routes */}
-                  <div className="p-3 rounded-2xl bg-brand-50/70 border border-brand-100 text-xs space-y-1">
-                    <div className="font-extrabold text-brand-800 flex items-center gap-1">
-                      <span>Key Expertise:</span>
-                    </div>
-                    <p className="text-slate-700 font-medium leading-relaxed">
-                      {driver.specialty}
-                    </p>
-                  </div>
-
-                  {/* Languages & Car Types */}
-                  <div className="grid grid-cols-2 gap-2 text-xs text-slate-600 font-semibold">
-                    <div className="p-2 rounded-xl bg-slate-50 border border-slate-200/60 truncate">
-                      <span className="text-slate-400 text-[10px] block uppercase font-bold">Languages</span>
-                      {driver.languages}
-                    </div>
-                    <div className="p-2 rounded-xl bg-slate-50 border border-slate-200/60 truncate">
-                      <span className="text-slate-400 text-[10px] block uppercase font-bold">Cars Handled</span>
-                      Manual & Auto
-                    </div>
-                  </div>
-
-                  {/* Pricing Breakdown Box */}
-                  <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200 space-y-1">
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs text-slate-500 font-medium">Daily Chauffeur Charge</span>
-                      <span className="text-base font-black text-slate-900">{driver.dailyRate}</span>
-                    </div>
-                    <div className="flex items-center justify-between text-xs text-slate-500">
-                      <span>Outstation Night Rate</span>
-                      <span className="font-bold text-slate-700">{driver.outstationRate}</span>
-                    </div>
-                  </div>
-
-                  {/* Action Button */}
-                  <button 
-                    onClick={() => setSelectedDriverForModal(driver)}
-                    className="w-full py-3 px-5 rounded-2xl font-black text-xs sm:text-sm text-white bg-slate-950 hover:bg-slate-850 active:scale-[0.98] transition-all flex items-center justify-center gap-2 shadow-lg shadow-slate-950/20 group cursor-pointer"
-                  >
-                    <span>Hire Chauffeur Directly</span>
-                    <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
-                  </button>
-
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </section>
 
         </main>
@@ -380,78 +461,65 @@ export default function DriversPage({ user, onLogout, onBackToHome, onNavigateTo
 
       </div>
 
-      {/* Driver Direct Hire Confirmation Modal */}
-      {selectedDriverForModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-md animate-fadeIn">
-          <div className="relative w-full max-w-lg rounded-3xl bg-white p-6 sm:p-8 border border-slate-200 shadow-2xl space-y-6">
-            
-            <div className="flex items-center justify-between border-b border-slate-100 pb-4">
-              <div className="flex items-center gap-3">
-                <img
-                  src={selectedDriverForModal.image}
-                  alt={selectedDriverForModal.name}
-                  className="w-12 h-12 rounded-2xl object-cover border-2 border-adventure-500"
-                />
-                <div>
-                  <h3 className="text-lg font-black text-slate-900 font-display">
-                    {selectedDriverForModal.name}
-                  </h3>
-                  <p className="text-xs text-slate-500 font-medium">
-                    {selectedDriverForModal.badge}
-                  </p>
-                </div>
-              </div>
+      {/* Driver Full Detail & Real KYC Data Modal */}
+      <DriverDetailsModal
+        driver={selectedDriverForModal}
+        tripDetails={tripDetails}
+        isOpen={Boolean(selectedDriverForModal)}
+        onClose={() => setSelectedDriverForModal(null)}
+        onSelectForMap={(driver) => {
+          if (onSelectDriver) {
+            onSelectDriver(driver);
+          }
+        }}
+        onHireDirect={(driver) => {
+          const record = dispatchBookingWhatsAppAlerts({
+            tripData: tripDetails,
+            traveler: user,
+            driver: {
+              name: driver.name,
+              phone: driver.phone || '+91 98221 44510',
+              badge: driver.badgeNumber || driver.badge
+            },
+            fleetOwner: {
+              agencyName: 'Touralink Verified Chauffeur Guild',
+              phone: '+91 94220 99881',
+              city: driver.location || 'Maharashtra'
+            }
+          });
+          if (onSelectDriver) {
+            onSelectDriver(driver);
+          }
+          setWhatsAppDispatchRecord(record);
+          setWhatsAppModalOpen(true);
+          setSelectedDriverForModal(null);
+        }}
+      />
 
-              <button
-                onClick={() => setSelectedDriverForModal(null)}
-                className="p-1.5 rounded-full hover:bg-slate-100 text-slate-400 hover:text-slate-700 cursor-pointer"
-              >
-                ✕
-              </button>
-            </div>
+      {/* Real-time WhatsApp Notification Modal for Traveler, Driver & Fleet Owner */}
+      <WhatsAppNotificationModal
+        isOpen={whatsAppModalOpen}
+        onClose={() => setWhatsAppModalOpen(false)}
+        dispatchRecord={whatsAppDispatchRecord}
+      />
 
-            <div className="space-y-3 text-xs text-slate-700">
-              <div className="flex items-center justify-between p-3 rounded-2xl bg-slate-50 border border-slate-200">
-                <span className="font-semibold text-slate-600">Daily Chauffeur Charge</span>
-                <span className="text-sm font-black text-adventure-700">{selectedDriverForModal.dailyRate}</span>
-              </div>
-
-              <div className="flex items-center justify-between p-3 rounded-2xl bg-slate-50 border border-slate-200">
-                <span className="font-semibold text-slate-600">Middleman Fee</span>
-                <span className="text-sm font-black text-emerald-600">0% (Pay Driver Directly)</span>
-              </div>
-
-              <div className="p-3 rounded-2xl bg-slate-50 border border-slate-200 space-y-1">
-                <span className="font-bold text-slate-900 block">About Driver:</span>
-                <p className="text-slate-600 italic">"{selectedDriverForModal.bio}"</p>
-              </div>
-
-              <div className="flex items-center gap-2 p-3 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-800">
-                <ShieldCheck className="w-4 h-4 shrink-0 text-emerald-600" />
-                <span>Driver ID, background verification & driving permit verified by Touralink.</span>
-              </div>
-            </div>
-
-            <div className="pt-2 flex items-center gap-3">
-              <button
-                onClick={() => setSelectedDriverForModal(null)}
-                className="w-1/2 py-3 rounded-xl border border-slate-200 text-slate-700 font-bold text-xs hover:bg-slate-50 transition-colors cursor-pointer"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={() => {
-                  alert(`Chauffeur hire request sent to ${selectedDriverForModal.name}! The driver will reach out directly to coordinate timings.`);
-                  setSelectedDriverForModal(null);
-                }}
-                className="w-1/2 py-3 rounded-xl bg-slate-950 text-white font-bold text-xs hover:bg-slate-850 transition-colors cursor-pointer"
-              >
-                Confirm Chauffeur Connect
-              </button>
-            </div>
-
-          </div>
-        </div>
+      {/* Real-time OpenStreetMap Route Modal for Driver Booking (allowEV={false}, showAIPlanner={false}) */}
+      {isRouteModalOpen && (
+        <ErrorBoundary onReset={() => setIsRouteModalOpen(false)}>
+          <InteractiveRouteModal
+            isOpen={isRouteModalOpen}
+            onClose={() => setIsRouteModalOpen(false)}
+            pickupLocation={tripDetails?.pickupLocation || 'Pickup Point'}
+            pickupCoords={tripDetails?.pickupCoords || [73.8567, 18.5204]}
+            dropoffLocation={tripDetails?.dropoffLocation || 'Destination'}
+            dropoffCoords={tripDetails?.dropoffCoords || [73.6586, 17.9237]}
+            additionalStops={tripDetails?.additionalStops || []}
+            routeData={tripDetails?.liveRouteData}
+            tripType={tripDetails?.tripType || 'one_way'}
+            allowEV={false}
+            showAIPlanner={false}
+          />
+        </ErrorBoundary>
       )}
 
     </div>

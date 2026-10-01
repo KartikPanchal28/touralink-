@@ -90,3 +90,54 @@ body:hover::-webkit-scrollbar-thumb {
 ::-webkit-scrollbar-thumb:hover {
   background: rgba(100, 116, 139, 0.7) !important;
 }
+
+/* ==========================================================================
+   Leaflet Map Tiles & Container Rendering Fixes (Tailwind Preflight Override)
+   ========================================================================== */
+.leaflet-container {
+  width: 100% !important;
+  height: 100% !important;
+  font-family: inherit !important;
+  background-color: #f1f5f9 !important; /* Soft light neutral base (like Google Maps during load) */
+}
+
+/* Crucial: Prevent Tailwind's img { max-width: 100%; height: auto; } from breaking Leaflet tiles */
+.leaflet-container img {
+  max-width: none !important;
+}
+
+.leaflet-tile-container img,
+.leaflet-tile {
+  max-width: none !important;
+  max-height: none !important;
+  visibility: inherit !important;
+}
+
+.leaflet-tile-pane {
+  z-index: 200 !important;
+}
+
+.leaflet-overlay-pane {
+  z-index: 400 !important;
+}
+
+.leaflet-shadow-pane {
+  z-index: 500 !important;
+}
+
+.leaflet-marker-pane {
+  z-index: 600 !important;
+}
+
+.leaflet-tooltip-pane {
+  z-index: 650 !important;
+}
+
+.leaflet-popup-pane {
+  z-index: 700 !important;
+}
+
+.leaflet-control {
+  z-index: 800 !important;
+}
+

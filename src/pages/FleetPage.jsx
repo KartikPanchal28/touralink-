@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Logo from '../components/Common/Logo';
 import Footer from '../components/Footer/Footer';
+import { subscribeToFleetVehicles } from '../services/fleetService';
 import { 
   Car, 
   Users, 
@@ -17,9 +18,16 @@ import {
   PhoneCall,
   LogOut,
   UserCheck,
-  Eye
+  Eye,
+  Maximize2
 } from 'lucide-react';
 import VehicleDetailsModal from '../components/Fleet/VehicleDetailsModal';
+import WhatsAppNotificationModal from '../components/Common/WhatsAppNotificationModal';
+import { dispatchBookingWhatsAppAlerts } from '../services/whatsappNotificationService';
+import RouteMapPreview from '../components/Common/RouteMapPreview';
+
+import ErrorBoundary from '../components/Common/ErrorBoundary';
+import InteractiveRouteModal from '../components/Common/InteractiveRouteModal';
 
 const BACKGROUND_VIDEO = '/videos/cape-goa-goa-indien-naturfotografie-verbl-ffende-natur.mp4';
 
@@ -32,8 +40,8 @@ const FLEET_DATA = [
     image: '/images/innova-crysta.jpg',
     images: [
       '/images/innova-crysta.jpg',
-      '/images/innova-crysta-1.jpg',
-      '/images/innova-crysta-2.jpg'
+      '/images/innova-crysta-2.jpg',
+      'https://images.unsplash.com/photo-1563720223185-11003d516935?auto=format&fit=crop&w=1200&q=80'
     ],
     seating: '6 + 1 Chauffeur',
     luggage: '4 Large Bags',
@@ -55,8 +63,8 @@ const FLEET_DATA = [
     image: '/images/ertiga.jpg',
     images: [
       '/images/ertiga.jpg',
-      '/images/ertiga-1.jpg',
-      '/images/ertiga-2.jpg'
+      'https://images.unsplash.com/photo-1549399542-7e3f8b79c341?auto=format&fit=crop&w=1200&q=80',
+      '/images/car-fleet-images.jpg'
     ],
     seating: '6 + 1 Chauffeur',
     luggage: '3 Bags',
@@ -78,8 +86,7 @@ const FLEET_DATA = [
     image: '/images/carens.jpg',
     images: [
       '/images/carens.jpg',
-      '/images/carens-1.jpg',
-      '/images/carens-2.jpg'
+      'https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=1200&q=80'
     ],
     seating: '6/7 + 1 Chauffeur',
     luggage: '3 Large Bags',
@@ -101,8 +108,7 @@ const FLEET_DATA = [
     image: '/images/dzire.jpg',
     images: [
       '/images/dzire.jpg',
-      '/images/dzire-1.jpg',
-      '/images/dzire-2.jpg'
+      'https://images.unsplash.com/photo-1541899481282-d53bffe3c35d?auto=format&fit=crop&w=1200&q=80'
     ],
     seating: '4 + 1 Chauffeur',
     luggage: '2 Large + 1 Small Bag',
@@ -124,8 +130,7 @@ const FLEET_DATA = [
     image: '/images/aura.jpg',
     images: [
       '/images/aura.jpg',
-      '/images/aura-1.jpg',
-      '/images/aura-2.jpg'
+      'https://images.unsplash.com/photo-1552519507-da3b142c6e3d?auto=format&fit=crop&w=1200&q=80'
     ],
     seating: '4 + 1 Chauffeur',
     luggage: '2 Large Bags (402L Boot)',
@@ -147,8 +152,7 @@ const FLEET_DATA = [
     image: '/images/wagonr.jpg',
     images: [
       '/images/wagonr.jpg',
-      '/images/wagonr-1.jpg',
-      '/images/wagonr-2.jpg'
+      'https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?auto=format&fit=crop&w=1200&q=80'
     ],
     seating: '4 + 1 Chauffeur',
     luggage: '2 Medium Bags',
@@ -170,8 +174,7 @@ const FLEET_DATA = [
     image: '/images/old-innova.jpg',
     images: [
       '/images/old-innova.jpg',
-      '/images/old-innova-1.jpg',
-      '/images/old-innova-2.jpg'
+      '/images/innova-crysta-2.jpg'
     ],
     seating: '7 + 1 Chauffeur',
     luggage: '4 Large Bags',
@@ -190,8 +193,9 @@ const FLEET_DATA = [
     name: 'Force Urbania Luxury Van (13-Seater)',
     category: 'van',
     categoryLabel: 'Luxury Group Traveler',
-    image: '/images/car-fleet-images.jpg',
+    image: 'https://images.unsplash.com/photo-1570125909232-eb263c188f7e?auto=format&fit=crop&w=1200&q=80',
     images: [
+      'https://images.unsplash.com/photo-1570125909232-eb263c188f7e?auto=format&fit=crop&w=1200&q=80',
       '/images/car-fleet-images.jpg'
     ],
     seating: '12 + 1 Chauffeur',
@@ -208,13 +212,41 @@ const FLEET_DATA = [
   }
 ];
 
-export default function FleetPage({ user, onLogout, onBackToHome, onNavigateToDrivers }) {
-  const [selectedCategory, setSelectedCategory] = useState('all');
+export default function FleetPage({ 
+  user, 
+  onLogout, 
+  onBackToHome, 
+  onNavigateToDrivers,
+  tripDetails,
+  onEditTrip,
+  onSelectVehicle
+}) {
+  const [fleetList, setFleetList] = useState(FLEET_DATA);
+  const [selectedCategory, setSelectedCategory] = useState(
+    tripDetails?.vehicleCategory && tripDetails.vehicleCategory !== 'all' 
+      ? tripDetails.vehicleCategory 
+      : 'all'
+  );
   const [selectedVehicleForModal, setSelectedVehicleForModal] = useState(null);
+  const [whatsAppModalOpen, setWhatsAppModalOpen] = useState(false);
+  const [whatsAppDispatchRecord, setWhatsAppDispatchRecord] = useState(null);
+  const [isRouteModalOpen, setIsRouteModalOpen] = useState(false);
+
+  // Subscribe to real-time fleet vehicles
+  useEffect(() => {
+    const unsub = subscribeToFleetVehicles((liveVehicles) => {
+      if (liveVehicles && liveVehicles.length > 0) {
+        setFleetList(liveVehicles);
+      }
+    });
+    return () => {
+      if (typeof unsub === 'function') unsub();
+    };
+  }, []);
 
   const filteredFleet = selectedCategory === 'all'
-    ? FLEET_DATA
-    : FLEET_DATA.filter((item) => item.category === selectedCategory);
+    ? fleetList
+    : fleetList.filter((item) => item.category === selectedCategory);
 
   return (
     <div className="relative min-h-screen font-sans text-slate-900 selection:bg-brand-500 selection:text-white">
@@ -291,10 +323,84 @@ export default function FleetPage({ user, onLogout, onBackToHome, onNavigateToDr
         </header>
 
         {/* Main Fleet Directory Content */}
-        <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 space-y-10 flex-1 w-full">
+        <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10 space-y-8 flex-1 w-full">
           
+          {/* Active Trip Requirement & Route Context Banner with Real OpenStreetMap Route Preview */}
+          {tripDetails && (
+            <section className="rounded-3xl bg-white/90 backdrop-blur-2xl border border-brand-200/90 shadow-xl p-4 sm:p-6 flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-5 animate-fadeIn">
+              <div className="flex items-start sm:items-center gap-3.5 flex-1">
+                <div className="w-11 h-11 rounded-2xl bg-brand-500 text-white flex items-center justify-center shadow-md shadow-brand-500/20 shrink-0">
+                  <MapPin className="w-5 h-5" />
+                </div>
+                <div className="space-y-1">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="text-xs font-black uppercase text-brand-700 tracking-wider bg-brand-50 px-2 py-0.5 rounded-md border border-brand-200">
+                      Fleet Booking Route
+                    </span>
+                    <span className="text-sm sm:text-base font-extrabold text-slate-900">
+                      {tripDetails.pickupLocation} → {tripDetails.dropoffLocation}
+                    </span>
+                    {tripDetails.additionalStops?.length > 0 && (
+                      <span className="text-[11px] font-bold text-amber-700 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200">
+                        +{tripDetails.additionalStops.length} Pickup Stop{tripDetails.additionalStops.length > 1 ? 's' : ''}
+                      </span>
+                    )}
+                  </div>
+
+                  <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-slate-600 font-semibold">
+                    <span className="flex items-center gap-1">
+                      <Sparkles className="w-3.5 h-3.5 text-brand-600" />
+                      <span>{tripDetails.estimatedDistance} KM ({tripDetails.estimatedDuration})</span>
+                    </span>
+                    <span>•</span>
+                    <span className="flex items-center gap-1">
+                      <Users className="w-3.5 h-3.5 text-brand-600" />
+                      <span>{tripDetails.passengers} Travelers</span>
+                    </span>
+                    <span>•</span>
+                    <span className="flex items-center gap-1">
+                      <Luggage className="w-3.5 h-3.5 text-adventure-600" />
+                      <span>{tripDetails.largeBags} Large + {tripDetails.smallBags} Small Bags</span>
+                    </span>
+                    <span>•</span>
+                    <span>{tripDetails.pickupDate}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Dedicated Fleet Route OpenStreetMap Preview */}
+              <div className="w-full lg:w-72 shrink-0">
+                <RouteMapPreview
+                  startCoords={tripDetails.pickupCoords || [72.8746, 19.0896]}
+                  endCoords={tripDetails.dropoffCoords || [73.8180, 15.4909]}
+                  routeGeometry={tripDetails.liveRouteData?.geometry}
+                  onClick={() => setIsRouteModalOpen(true)}
+                />
+              </div>
+
+              <div className="flex flex-row lg:flex-col items-center justify-end gap-2 shrink-0">
+                <button
+                  type="button"
+                  onClick={() => setIsRouteModalOpen(true)}
+                  className="w-full px-4 py-2.5 rounded-2xl bg-white border border-slate-300 hover:bg-slate-50 text-slate-800 font-extrabold text-xs shadow-xs transition-all cursor-pointer flex items-center justify-center gap-1.5 active:scale-95"
+                >
+                  <Maximize2 className="w-3.5 h-3.5 text-brand-600" />
+                  <span>Inspect Route & Fuel</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={onEditTrip}
+                  className="w-full px-4 py-2.5 rounded-2xl bg-slate-900 hover:bg-slate-800 text-white font-extrabold text-xs shadow-md transition-all cursor-pointer flex items-center justify-center gap-1.5 active:scale-95"
+                >
+                  <span>Edit Requirements</span>
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            </section>
+          )}
+
           {/* Header Banner */}
-          <section className="relative rounded-3xl overflow-hidden border border-white/40 bg-white/35 backdrop-blur-2xl saturate-[190%] shadow-[0_8px_32px_rgba(0,0,0,0.05)] p-6 sm:p-10 space-y-5 transition-all">
+          <section className="relative rounded-3xl overflow-hidden border border-white/40 bg-white/35 backdrop-blur-2xl saturate-[190%] shadow-[0_8px_32px_rgba(0,0,0,0.05)] p-6 sm:p-8 space-y-5 transition-all">
             
             <div className="flex flex-wrap items-center justify-between gap-4">
               <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/60 backdrop-blur-xl border border-white/60 text-xs font-bold text-slate-800 shadow-xs">
@@ -311,23 +417,22 @@ export default function FleetPage({ user, onLogout, onBackToHome, onNavigateToDr
               </button>
             </div>
 
-            <div className="max-w-3xl space-y-3">
-              <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold font-display text-slate-900 tracking-tight leading-tight">
-                Available Fleet & Commercial Cabs
+            <div className="max-w-3xl space-y-2">
+              <h1 className="text-2xl sm:text-4xl font-extrabold font-display text-slate-900 tracking-tight leading-tight">
+                {tripDetails ? 'Matching Vehicles for Your Route' : 'Available Fleet & Commercial Cabs'}
               </h1>
-              <p className="text-sm sm:text-base text-slate-800 leading-relaxed font-medium">
-                Direct vehicles from verified owners across Maharashtra, Goa, Gujarat & Karnataka. 
+              <p className="text-xs sm:text-sm text-slate-800 leading-relaxed font-medium">
+                Direct vehicles with assigned verified commercial chauffeurs.
                 <strong className="text-slate-950 font-bold"> Fixed transparent per-km billing with 0% middleman markups.</strong>
               </p>
             </div>
 
             {/* Category Filter Pills (Footer style) */}
-            <div className="pt-4 border-t border-white/30 flex flex-wrap items-center gap-2.5">
+            <div className="pt-3 border-t border-white/30 flex flex-wrap items-center gap-2.5">
               {[
                 { id: 'all', label: 'All Fleet Vehicles' },
                 { id: 'muv', label: '7-Seater MUVs (Innova / Ertiga)' },
-                { id: 'sedan', label: 'Comfort Sedans (Dzire / Etios)' },
-                { id: 'suv', label: 'Executive 4x4 SUVs (Fortuner / Scorpio)' },
+                { id: 'sedan', label: 'Comfort Sedans (Dzire / Aura)' },
                 { id: 'van', label: 'Luxury Group Vans (Urbania 13-Seater)' },
               ].map((tab) => (
                 <button
@@ -348,113 +453,214 @@ export default function FleetPage({ user, onLogout, onBackToHome, onNavigateToDr
 
           {/* Fleet Grid */}
           <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 items-stretch">
-            {filteredFleet.map((vehicle) => (
-              <div
-                key={vehicle.id}
-                className="relative rounded-3xl overflow-hidden border border-slate-200 bg-white/90 backdrop-blur-xl shadow-xl shadow-slate-200/50 hover:bg-white hover:border-slate-300 hover:shadow-2xl transition-all duration-300 flex flex-col justify-between group"
-              >
-                {/* Vehicle Image Preview with Multi-Photo Click Trigger */}
-                <div 
-                  onClick={() => setSelectedVehicleForModal(vehicle)}
-                  className="relative h-52 sm:h-56 w-full overflow-hidden cursor-pointer bg-slate-900"
-                  title="Click to view all photos of this vehicle"
+            {filteredFleet.map((vehicle) => {
+              // Calculate dynamic total cost if trip distance is known
+              const rateNum = parseFloat(vehicle.ratePerKm.replace(/[^0-9.]/g, '')) || 12;
+              const dynamicTripCost = tripDetails?.estimatedDistance
+                ? Math.round(rateNum * tripDetails.estimatedDistance)
+                : null;
+
+              // Check passenger fit
+              const seatingCapNum = parseInt(vehicle.seating, 10) || 4;
+              const fitsPassengers = tripDetails?.passengers ? seatingCapNum >= tripDetails.passengers : true;
+
+              const isVehicleSelected = tripDetails?.selectedVehicle?.id === vehicle.id || 
+                tripDetails?.vehicleRecommendation?.title?.toLowerCase().includes(vehicle.name.toLowerCase().split(' ')[1] || vehicle.name.toLowerCase());
+
+              return (
+                <div
+                  key={vehicle.id}
+                  className={`relative rounded-3xl overflow-hidden border bg-white/90 backdrop-blur-xl shadow-xl transition-all duration-300 flex flex-col justify-between group ${
+                    isVehicleSelected
+                      ? 'border-brand-500 ring-2 ring-brand-500/40 shadow-2xl'
+                      : fitsPassengers
+                      ? 'border-slate-200 hover:border-slate-300 hover:shadow-2xl'
+                      : 'border-slate-200 opacity-90'
+                  }`}
                 >
-                  <img
-                    src={vehicle.image}
-                    alt={vehicle.name}
-                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-slate-950/70 via-slate-950/20 to-transparent" />
-                  
-                  {/* Category Pill */}
-                  <div className="absolute top-4 left-4 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/95 border border-slate-200/80 text-xs font-extrabold text-slate-900 shadow-xs">
-                    <Car className="w-3.5 h-3.5 text-brand-600" />
-                    <span>{vehicle.categoryLabel}</span>
+                  {/* Active Selected Pill Badge */}
+                  {isVehicleSelected && (
+                    <div className="absolute top-4 left-1/2 -translate-x-1/2 z-20 px-3 py-1 rounded-full bg-emerald-600 text-white text-[10px] font-black shadow-lg flex items-center gap-1 animate-pulse">
+                      <CheckCircle2 className="w-3.5 h-3.5" />
+                      <span>Active On Main Page Map</span>
+                    </div>
+                  )}
+
+                  {/* Vehicle Image Preview with Multi-Photo Click Trigger */}
+                  <div 
+                    onClick={() => {
+                      onSelectVehicle?.(vehicle);
+                      setSelectedVehicleForModal(vehicle);
+                    }}
+                    className="relative h-52 sm:h-56 w-full overflow-hidden cursor-pointer bg-slate-900"
+                    title="Click to view all photos of this vehicle"
+                  >
+                    {/* Layer 1: Ambient Blurred Backdrop */}
+                    <img
+                      src={vehicle.image}
+                      alt=""
+                      className="absolute inset-0 w-full h-full object-cover blur-2xl opacity-40 scale-125 select-none pointer-events-none"
+                    />
+                    <div className="absolute inset-0 bg-radial from-transparent via-slate-950/50 to-slate-950/80 pointer-events-none" />
+
+                    {/* Layer 2: Centered, uncropped car showcase */}
+                    <div className="relative z-10 w-full h-full flex items-center justify-center p-3">
+                      <img
+                        src={vehicle.image}
+                        alt={vehicle.name}
+                        className="max-h-full max-w-full object-contain filter drop-shadow-[0_12px_24px_rgba(0,0,0,0.85)] group-hover:scale-105 transition-transform duration-500"
+                      />
+                    </div>
+                    <div className="absolute inset-0 z-10 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent pointer-events-none" />
+                    
+                    {/* Category Pill */}
+                    <div className="absolute top-4 left-4 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/95 border border-slate-200/80 text-xs font-extrabold text-slate-900 shadow-xs">
+                      <Car className="w-3.5 h-3.5 text-brand-600" />
+                      <span>{vehicle.categoryLabel}</span>
+                    </div>
+
+                    {/* Multi-Photo Count & Rating Badges */}
+                    <div className="absolute top-4 right-4 flex items-center gap-1.5">
+                      {vehicle.images && vehicle.images.length > 1 && (
+                        <div className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-slate-950/80 backdrop-blur-md text-white text-[11px] font-black border border-white/20 shadow-xs">
+                          <span>📸 {vehicle.images.length} Photos</span>
+                        </div>
+                      )}
+                      <div className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-slate-900/80 backdrop-blur-md text-white text-xs font-bold shadow-xs">
+                        <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
+                        <span>{vehicle.rating}</span>
+                      </div>
+                    </div>
+
+                    {/* Vehicle Name Headline */}
+                    <div className="absolute bottom-3 left-4 right-4 text-white flex items-end justify-between">
+                      <div className="text-lg font-black font-display drop-shadow-md">
+                        {vehicle.name}
+                      </div>
+                      <span className="text-[10px] font-bold text-brand-300 bg-black/40 px-2 py-0.5 rounded backdrop-blur-xs">
+                        View Photos
+                      </span>
+                    </div>
                   </div>
 
-                  {/* Multi-Photo Count & Rating Badges */}
-                  <div className="absolute top-4 right-4 flex items-center gap-1.5">
-                    {vehicle.images && vehicle.images.length > 1 && (
-                      <div className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-slate-950/80 backdrop-blur-md text-white text-[11px] font-black border border-white/20 shadow-xs">
-                        <span>📸 {vehicle.images.length} Photos</span>
+                  {/* Card Specs & Features */}
+                  <div className="p-5 sm:p-6 space-y-4 flex-1 flex flex-col justify-between">
+                    
+                    {/* Smart Trip Compatibility Match Tags */}
+                    {tripDetails && (
+                      <div className="flex flex-wrap gap-1.5">
+                        <span className={`text-[10px] font-extrabold px-2 py-1 rounded-lg flex items-center gap-1 ${
+                          fitsPassengers
+                            ? 'bg-emerald-50 text-emerald-800 border border-emerald-200'
+                            : 'bg-amber-50 text-amber-800 border border-amber-200'
+                        }`}>
+                          {fitsPassengers
+                            ? `✓ Fits ${tripDetails.passengers} Travelers`
+                            : `⚠️ Capacity: ${vehicle.seating}`}
+                        </span>
+
+                        <span className="text-[10px] font-extrabold px-2 py-1 rounded-lg bg-blue-50 text-blue-800 border border-blue-200 flex items-center gap-1">
+                          ✓ Boot: {vehicle.luggage}
+                        </span>
                       </div>
                     )}
-                    <div className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-slate-900/80 backdrop-blur-md text-white text-xs font-bold shadow-xs">
-                      <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
-                      <span>{vehicle.rating}</span>
-                    </div>
-                  </div>
 
-                  {/* Vehicle Name Headline */}
-                  <div className="absolute bottom-3 left-4 right-4 text-white flex items-end justify-between">
-                    <div className="text-lg font-black font-display drop-shadow-md">
-                      {vehicle.name}
+                    {/* Quick Specs Grid */}
+                    <div className="grid grid-cols-2 gap-2 text-xs font-semibold text-slate-700">
+                      <div className="flex items-center gap-2 p-2 rounded-xl bg-slate-50 border border-slate-200/60">
+                        <Users className="w-4 h-4 text-brand-600 shrink-0" />
+                        <span>{vehicle.seating}</span>
+                      </div>
+                      <div className="flex items-center gap-2 p-2 rounded-xl bg-slate-50 border border-slate-200/60">
+                        <Luggage className="w-4 h-4 text-adventure-600 shrink-0" />
+                        <span>{vehicle.luggage}</span>
+                      </div>
+                      <div className="flex items-center gap-2 p-2 rounded-xl bg-slate-50 border border-slate-200/60 col-span-2">
+                        <Fuel className="w-4 h-4 text-emerald-600 shrink-0" />
+                        <span className="truncate">{vehicle.ac}</span>
+                      </div>
                     </div>
-                    <span className="text-[10px] font-bold text-brand-300 bg-black/40 px-2 py-0.5 rounded backdrop-blur-xs">
-                      View Photos
-                    </span>
+
+                    {/* Pricing Breakdown Box with Dynamic Trip Total */}
+                    <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200 space-y-1.5">
+                      {dynamicTripCost ? (
+                        <div className="space-y-1">
+                          <div className="flex items-center justify-between">
+                            <span className="text-xs text-brand-700 font-extrabold">Your Trip Estimate ({tripDetails.estimatedDistance} KM)</span>
+                            <span className="text-lg font-black text-slate-900">₹{dynamicTripCost.toLocaleString()}</span>
+                          </div>
+                          <div className="flex items-center justify-between text-[11px] text-slate-500">
+                            <span>Base Rate: {vehicle.ratePerKm}</span>
+                            <span>Full Day: {vehicle.dailyRate}</span>
+                          </div>
+                        </div>
+                      ) : (
+                        <>
+                          <div className="flex items-center justify-between">
+                            <span className="text-xs text-slate-500 font-medium">Outstation Rate</span>
+                            <span className="text-base font-black text-slate-900">{vehicle.ratePerKm}</span>
+                          </div>
+                          <div className="flex items-center justify-between text-xs text-slate-500">
+                            <span>Full Day Package</span>
+                            <span className="font-bold text-slate-700">{vehicle.dailyRate}</span>
+                          </div>
+                        </>
+                      )}
+                    </div>
+
+                    {/* Action Buttons: View Vehicle, Select for Map, & Request Driver */}
+                    <div className="space-y-2 pt-1">
+                      <button 
+                        type="button"
+                        onClick={() => onSelectVehicle?.(vehicle)}
+                        className={`w-full py-2.5 px-4 rounded-2xl font-black text-xs transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-xs ${
+                          isVehicleSelected
+                            ? 'bg-emerald-50 text-emerald-800 border-2 border-emerald-500'
+                            : 'bg-brand-50 hover:bg-brand-100 text-brand-800 border border-brand-200'
+                        }`}
+                      >
+                        {isVehicleSelected ? (
+                          <>
+                            <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                            <span>✓ Active Selected Cab for Map</span>
+                          </>
+                        ) : (
+                          <>
+                            <Car className="w-4 h-4 text-brand-600" />
+                            <span>Select This Cab for Map</span>
+                          </>
+                        )}
+                      </button>
+
+                      <div className="flex items-center gap-2">
+                        <button 
+                          onClick={() => {
+                            onSelectVehicle?.(vehicle);
+                            setSelectedVehicleForModal(vehicle);
+                          }}
+                          className="flex-1 py-2.5 px-3 rounded-2xl font-black text-xs text-slate-800 bg-slate-100 hover:bg-slate-200 active:scale-[0.98] transition-all flex items-center justify-center gap-1.5 cursor-pointer border border-slate-200"
+                        >
+                          <Eye className="w-4 h-4 text-brand-600" />
+                          <span>Photos ({vehicle.images?.length || 3})</span>
+                        </button>
+
+                        <button 
+                          onClick={() => {
+                            onSelectVehicle?.(vehicle);
+                            setSelectedVehicleForModal(vehicle);
+                          }}
+                          className="flex-1 py-2.5 px-3 rounded-2xl font-black text-xs text-white bg-slate-950 hover:bg-slate-850 active:scale-[0.98] transition-all flex items-center justify-center gap-1.5 shadow-md shadow-slate-950/20 group cursor-pointer"
+                        >
+                          <span>Book Cab</span>
+                          <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-1" />
+                        </button>
+                      </div>
+                    </div>
+
                   </div>
                 </div>
-
-                {/* Card Specs & Features */}
-                <div className="p-5 sm:p-6 space-y-4 flex-1 flex flex-col justify-between">
-                  
-                  {/* Quick Specs Grid */}
-                  <div className="grid grid-cols-2 gap-2.5 text-xs font-semibold text-slate-700">
-                    <div className="flex items-center gap-2 p-2 rounded-xl bg-slate-50 border border-slate-200/60">
-                      <Users className="w-4 h-4 text-brand-600 shrink-0" />
-                      <span>{vehicle.seating}</span>
-                    </div>
-                    <div className="flex items-center gap-2 p-2 rounded-xl bg-slate-50 border border-slate-200/60">
-                      <Luggage className="w-4 h-4 text-adventure-600 shrink-0" />
-                      <span>{vehicle.luggage}</span>
-                    </div>
-                    <div className="flex items-center gap-2 p-2 rounded-xl bg-slate-50 border border-slate-200/60 col-span-2">
-                      <Fuel className="w-4 h-4 text-emerald-600 shrink-0" />
-                      <span className="truncate">{vehicle.ac}</span>
-                    </div>
-                  </div>
-
-                  {/* Popular Route Tag */}
-                  <div className="flex items-center gap-2 text-xs font-semibold text-slate-600 bg-brand-50/70 p-2.5 rounded-xl border border-brand-100">
-                    <MapPin className="w-3.5 h-3.5 text-brand-700 shrink-0" />
-                    <span className="truncate"><strong>Popular:</strong> {vehicle.popularRoutes}</span>
-                  </div>
-
-                  {/* Pricing Breakdown Box */}
-                  <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200 space-y-1.5">
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs text-slate-500 font-medium">Outstation Rate</span>
-                      <span className="text-base font-black text-slate-900">{vehicle.ratePerKm}</span>
-                    </div>
-                    <div className="flex items-center justify-between text-xs text-slate-500">
-                      <span>Full Day Package</span>
-                      <span className="font-bold text-slate-700">{vehicle.dailyRate}</span>
-                    </div>
-                  </div>
-
-                  {/* Action Buttons: View Vehicle & Request Driver */}
-                  <div className="flex items-center gap-2 pt-1">
-                    <button 
-                      onClick={() => setSelectedVehicleForModal(vehicle)}
-                      className="flex-1 py-3 px-4 rounded-2xl font-black text-xs text-slate-800 bg-slate-100 hover:bg-slate-200 active:scale-[0.98] transition-all flex items-center justify-center gap-1.5 cursor-pointer border border-slate-200"
-                    >
-                      <Eye className="w-4 h-4 text-brand-600" />
-                      <span>View Vehicle</span>
-                    </button>
-
-                    <button 
-                      onClick={() => setSelectedVehicleForModal(vehicle)}
-                      className="flex-1 py-3 px-4 rounded-2xl font-black text-xs text-white bg-slate-950 hover:bg-slate-850 active:scale-[0.98] transition-all flex items-center justify-center gap-1.5 shadow-md shadow-slate-950/20 group cursor-pointer"
-                    >
-                      <span>Book Driver</span>
-                      <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-1" />
-                    </button>
-                  </div>
-
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </section>
 
         </main>
@@ -467,12 +673,54 @@ export default function FleetPage({ user, onLogout, onBackToHome, onNavigateToDr
       {/* Comprehensive Vehicle Details & Showcase Modal */}
       <VehicleDetailsModal
         vehicle={selectedVehicleForModal}
+        tripDetails={tripDetails}
         isOpen={Boolean(selectedVehicleForModal)}
         onClose={() => setSelectedVehicleForModal(null)}
         onBookDirect={(v) => {
-          alert(`Direct Chauffeur Request confirmed for ${v.name}! Verified driver assigned.`);
+          if (onSelectVehicle) {
+            onSelectVehicle(v);
+          }
+          const record = dispatchBookingWhatsAppAlerts({
+            tripData: tripDetails,
+            traveler: user,
+            driver: v.assignedDriver,
+            vehicle: v,
+            fleetOwner: {
+              agencyName: v.agencyName || 'Touralink Partner Fleet Agency',
+              phone: v.agencyPhone || '+91 94220 99881',
+              city: v.city || 'Mumbai / Pune'
+            }
+          });
+          setWhatsAppDispatchRecord(record);
+          setWhatsAppModalOpen(true);
         }}
       />
+
+      {/* Real-time WhatsApp Notification Modal for Traveler, Driver & Fleet Owner */}
+      <WhatsAppNotificationModal
+        isOpen={whatsAppModalOpen}
+        onClose={() => setWhatsAppModalOpen(false)}
+        dispatchRecord={whatsAppDispatchRecord}
+      />
+
+      {/* Real-time OpenStreetMap Route Modal for Fleet Booking (allowEV={false}, showAIPlanner={false}) */}
+      {isRouteModalOpen && (
+        <ErrorBoundary onReset={() => setIsRouteModalOpen(false)}>
+          <InteractiveRouteModal
+            isOpen={isRouteModalOpen}
+            onClose={() => setIsRouteModalOpen(false)}
+            pickupLocation={tripDetails?.pickupLocation || 'Pickup Point'}
+            pickupCoords={tripDetails?.pickupCoords || [72.8746, 19.0896]}
+            dropoffLocation={tripDetails?.dropoffLocation || 'Destination'}
+            dropoffCoords={tripDetails?.dropoffCoords || [73.8180, 15.4909]}
+            additionalStops={tripDetails?.additionalStops || []}
+            routeData={tripDetails?.liveRouteData}
+            tripType={tripDetails?.tripType || 'one_way'}
+            allowEV={false}
+            showAIPlanner={false}
+          />
+        </ErrorBoundary>
+      )}
 
     </div>
   );

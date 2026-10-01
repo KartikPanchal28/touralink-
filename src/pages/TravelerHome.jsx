@@ -21,17 +21,33 @@ import {
   Images
 } from 'lucide-react';
 import FleetGalleryModal from '../components/Fleet/FleetGalleryModal';
+import CustomTripPlannerSection from '../components/Traveler/CustomTripPlannerSection';
 
 const BACKGROUND_VIDEO = '/videos/cape-goa-goa-indien-naturfotografie-verbl-ffende-natur.mp4';
 
 export default function TravelerHome({
   user,
   onLogout,
+  onNavigateToEstimate,
   onNavigateToFleet,
-  onNavigateToDrivers
+  onNavigateToDrivers,
+  onNavigateToHireDriver,
+  tripDetails,
+  chauffeurDetails,
+  onProceedFromEstimate,
+  onProceedFromChauffeur,
+  onSelectVehicle,
+  onSelectDriver,
+  onUpdateTripDetails,
+  onUpdateChauffeurDetails
 }) {
   // Rental mode tab: 'car_driver' | 'driver_only'
-  const [activeTab, setActiveTab] = useState('car_driver');
+  const [activeTab, setActiveTab] = useState(() => {
+    if (chauffeurDetails?.selectedDriver && !tripDetails?.selectedVehicle) {
+      return 'driver_only';
+    }
+    return 'car_driver';
+  });
   const [isGalleryOpen, setIsGalleryOpen] = useState(false);
 
   return (
@@ -71,10 +87,10 @@ export default function TravelerHome({
                 />
                 <div className="text-left hidden sm:block pr-1">
                   <div className="text-xs font-extrabold text-slate-900 leading-tight">
-                    Traveler
+                    {user?.name || 'Traveler'}
                   </div>
-                  <div className="text-[10px] text-brand-600 font-bold">
-                    India Beta
+                  <div className="text-[10px] text-emerald-700 font-bold flex items-center gap-1">
+                    <span>📱 {user?.phone || 'WhatsApp Verified'}</span>
                   </div>
                 </div>
                 <button
@@ -172,9 +188,13 @@ export default function TravelerHome({
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8 items-stretch">
 
-              {/* Card 1: Car + Verified Driver */}
+              {/* Card 1: Car & Cab Rental (Car + Driver) */}
               <div
-                onClick={() => setActiveTab('car_driver')}
+                onClick={() => {
+                  setActiveTab('car_driver');
+                  if (onNavigateToEstimate) onNavigateToEstimate('car_driver');
+                  else onNavigateToFleet();
+                }}
                 className={`relative rounded-3xl overflow-hidden border transition-all duration-300 flex flex-col justify-between group cursor-pointer ${activeTab === 'car_driver'
                   ? 'border-brand-600 bg-white shadow-2xl shadow-slate-300/60 ring-2 ring-brand-500/25'
                   : 'border-slate-200 bg-white/90 hover:bg-white hover:border-slate-300 shadow-xl shadow-slate-200/50'
@@ -212,16 +232,16 @@ export default function TravelerHome({
                   <div className="absolute bottom-4 left-4 right-4 text-white flex items-end justify-between">
                     <div>
                       <div className="text-xl font-black font-display drop-shadow-md">
-                        Car + Verified Driver
+                        Car & Cab Rental
                       </div>
                       <div className="text-xs text-slate-200 font-medium drop-shadow-sm">
-                        Innova Crysta • Ertiga • Dzire • WagonR • SUVs
+                        Innova Crysta • Ertiga • Dzire • Force Urbania
                       </div>
                     </div>
 
                     <span className="text-[11px] font-bold text-brand-300 bg-black/40 px-2 py-0.5 rounded-md backdrop-blur-xs flex items-center gap-1">
                       <Eye className="w-3 h-3" />
-                      <span>Click to view photos</span>
+                      <span>View fleet</span>
                     </span>
                   </div>
                 </div>
@@ -229,37 +249,47 @@ export default function TravelerHome({
                 {/* Card Content & Action */}
                 <div className="p-6 sm:p-7 space-y-6 flex-1 flex flex-col justify-between">
                   <p className="text-sm text-slate-700 leading-relaxed font-medium">
-                    Book complete AC vehicles with experienced commercial chauffeurs. Fixed transparent rates with zero hidden charges for one-way or round trips across Maharashtra, Goa, Gujarat & Karnataka.
+                    Don't have a car? Book complete sanitized AC commercial vehicles with verified chauffeurs. Fixed transparent per-km rates with zero hidden charges for one-way or round trips across Maharashtra, Goa, Gujarat & Karnataka.
                   </p>
 
-                  <div className="flex items-center gap-2">
+                  <div className="space-y-2.5">
+                    {/* Action Button */}
                     <button
                       type="button"
                       onClick={(e) => {
                         e.stopPropagation();
-                        setIsGalleryOpen(true);
+                        if (onNavigateToEstimate) onNavigateToEstimate('car_driver');
+                        else onNavigateToFleet();
                       }}
-                      className="py-3.5 px-4 rounded-2xl font-black text-xs text-slate-800 bg-slate-100 hover:bg-slate-200 active:scale-[0.98] transition-all flex items-center justify-center gap-1.5 border border-slate-200 cursor-pointer"
+                      className="w-full py-3.5 px-6 rounded-2xl font-black text-sm text-white bg-slate-950 hover:bg-slate-850 active:scale-[0.98] transition-all flex items-center justify-center gap-2 shadow-lg shadow-slate-950/20 group cursor-pointer"
                     >
-                      <Images className="w-4 h-4 text-brand-600" />
-                      <span>View Car Photos</span>
-                    </button>
-
-                    <button
-                      type="button"
-                      onClick={onNavigateToFleet}
-                      className="flex-1 py-3.5 px-5 rounded-2xl font-black text-xs sm:text-sm text-white bg-slate-950 hover:bg-slate-850 active:scale-[0.98] transition-all flex items-center justify-center gap-2 shadow-lg shadow-slate-950/20 group cursor-pointer"
-                    >
-                      <span>Select Car + Driver</span>
+                      <span>Plan Car Rental</span>
                       <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
                     </button>
+
+                    <div className="text-center">
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onNavigateToFleet();
+                        }}
+                        className="text-xs font-semibold text-slate-500 hover:text-brand-600 hover:underline cursor-pointer transition-colors"
+                      >
+                        Or directly browse fleet directory →
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
 
-              {/* Card 2: Driver Only (For Your Own Car / Fleet) */}
+              {/* Card 2: Driver Only (For Your Own Car) */}
               <div
-                onClick={() => setActiveTab('driver_only')}
+                onClick={() => {
+                  setActiveTab('driver_only');
+                  if (onNavigateToHireDriver) onNavigateToHireDriver();
+                  else onNavigateToDrivers();
+                }}
                 className={`relative rounded-3xl overflow-hidden border transition-all duration-300 flex flex-col justify-between group cursor-pointer ${activeTab === 'driver_only'
                   ? 'border-adventure-600 bg-white shadow-2xl shadow-slate-300/60 ring-2 ring-adventure-500/25'
                   : 'border-slate-200 bg-white/90 hover:bg-white hover:border-slate-300 shadow-xl shadow-slate-200/50'
@@ -280,20 +310,13 @@ export default function TravelerHome({
                     <span>Personal Chauffeur</span>
                   </div>
 
-                  {/* Active Indicator Badge */}
-                  {activeTab === 'driver_only' && (
-                    <div className="absolute top-4 right-4 px-3 py-1 rounded-full bg-adventure-600 text-white text-[11px] font-black uppercase tracking-wider shadow-md">
-                      Selected
-                    </div>
-                  )}
-
                   {/* Bottom Image Headline */}
                   <div className="absolute bottom-4 left-4 right-4 text-white">
                     <div className="text-xl font-black font-display drop-shadow-md">
-                      Driver Only (For Your Car)
+                      Hire Driver (For Your Own Car)
                     </div>
                     <div className="text-xs text-slate-200 font-medium drop-shadow-sm">
-                      Ghats • Outstation • Night Drives • Fleet
+                      Ghats Specialists • Expressways • Luxury Automatics
                     </div>
                   </div>
                 </div>
@@ -301,23 +324,77 @@ export default function TravelerHome({
                 {/* Card Content & Action */}
                 <div className="p-6 sm:p-7 space-y-6 flex-1 flex flex-col justify-between">
                   <p className="text-sm text-slate-700 leading-relaxed font-medium">
-                    Have your own car or fleet? Hire verified, professional chauffeurs for steep ghat drives, long highway trips, or city tours with 100% peace of mind.
+                    Already own a car or fleet? Hire verified, background-checked chauffeurs specialized in steep hairpin ghats, long expressway journeys, or luxury automatic vehicles. Transparent daily driver wages.
                   </p>
 
-                  {/* Action Button */}
-                  <button
-                    onClick={onNavigateToDrivers}
-                    className="w-full py-3.5 px-6 rounded-2xl font-black text-sm text-white bg-slate-950 hover:bg-slate-850 active:scale-[0.98] transition-all flex items-center justify-center gap-2 shadow-lg shadow-slate-950/20 group cursor-pointer"
-                  >
-                    <span>Select Driver Only</span>
-                    <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
-                  </button>
+                  <div className="space-y-2.5">
+                    {/* Action Button */}
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (onNavigateToHireDriver) onNavigateToHireDriver();
+                        else onNavigateToDrivers();
+                      }}
+                      className="w-full py-3.5 px-6 rounded-2xl font-black text-sm text-white bg-slate-950 hover:bg-slate-850 active:scale-[0.98] transition-all flex items-center justify-center gap-2 shadow-lg shadow-slate-950/20 group cursor-pointer"
+                    >
+                      <span>Hire Chauffeur For Your Car</span>
+                      <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
+                    </button>
+
+                    <div className="text-center">
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onNavigateToDrivers();
+                        }}
+                        className="text-xs font-semibold text-slate-500 hover:text-adventure-600 hover:underline cursor-pointer transition-colors"
+                      >
+                        Or directly browse verified chauffeurs →
+                      </button>
+                    </div>
+                  </div>
                 </div>
               </div>
 
             </div>
 
           </section>
+
+          {/* 🏖️ Wanna Plan Your Own Trip? We Are Here! (Discounted Sports, Tourism Activities, OSM Map & AI Planner) */}
+          <CustomTripPlannerSection
+            user={user}
+            tripDetails={tripDetails}
+            chauffeurDetails={chauffeurDetails}
+            activeRentalMode={activeTab}
+            onBookFleetTrip={(tripConfig) => {
+              if (onProceedFromEstimate) {
+                onProceedFromEstimate(tripConfig, 'fleet');
+              } else if (onNavigateToEstimate) {
+                onNavigateToEstimate('car_driver', tripConfig);
+              } else {
+                onNavigateToFleet();
+              }
+            }}
+            onHireChauffeurTrip={(tripConfig) => {
+              if (onProceedFromChauffeur) {
+                onProceedFromChauffeur(tripConfig, 'drivers');
+              } else if (onNavigateToHireDriver) {
+                onNavigateToHireDriver(tripConfig);
+              } else {
+                onNavigateToDrivers();
+              }
+            }}
+            onNavigateToEstimate={onNavigateToEstimate}
+            onNavigateToHireDriver={onNavigateToHireDriver}
+            onDirectFleet={onNavigateToFleet}
+            onDirectDrivers={onNavigateToDrivers}
+            onSelectVehicle={onSelectVehicle}
+            onSelectDriver={onSelectDriver}
+            onUpdateTripDetails={onUpdateTripDetails}
+            onUpdateChauffeurDetails={onUpdateChauffeurDetails}
+          />
 
         </main>
 

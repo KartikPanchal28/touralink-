@@ -9,10 +9,15 @@ import {
   Fuel,
   Star,
   ShieldCheck,
-  MapPin,
   CheckCircle2,
   ArrowRight,
-  Sparkles
+  Sparkles,
+  Maximize2,
+  Minimize2,
+  Camera,
+  Layers,
+  ZoomIn,
+  SlidersHorizontal
 } from 'lucide-react';
 
 export const ALL_FLEET_VEHICLES = [
@@ -22,6 +27,11 @@ export const ALL_FLEET_VEHICLES = [
     category: 'muv',
     categoryLabel: '7-Seater Premium MUV',
     image: '/images/innova-crysta.jpg',
+    gallery: [
+      { label: 'Exterior', url: '/images/innova-crysta.jpg' },
+      { label: 'Rear Profile', url: '/images/innova-crysta-2.jpg' },
+      { label: 'Cabin Luxury', url: 'https://images.unsplash.com/photo-1563720223185-11003d516935?auto=format&fit=crop&w=1200&q=80' }
+    ],
     seating: '6 + 1 Chauffeur',
     luggage: '4 Large Bags',
     fuel: 'Diesel • Manual / Auto',
@@ -41,6 +51,11 @@ export const ALL_FLEET_VEHICLES = [
     category: 'muv',
     categoryLabel: '7-Seater Family MUV',
     image: '/images/ertiga.jpg',
+    gallery: [
+      { label: 'Exterior', url: '/images/ertiga.jpg' },
+      { label: '7-Seat Cabin', url: 'https://images.unsplash.com/photo-1549399542-7e3f8b79c341?auto=format&fit=crop&w=1200&q=80' },
+      { label: 'Fleet Standard', url: '/images/car-fleet-images.jpg' }
+    ],
     seating: '6 + 1 Chauffeur',
     luggage: '3 Bags',
     fuel: 'Petrol / CNG • AC',
@@ -60,6 +75,10 @@ export const ALL_FLEET_VEHICLES = [
     category: 'sedan',
     categoryLabel: '4-Seater Compact Sedan',
     image: '/images/dzire.jpg',
+    gallery: [
+      { label: 'Exterior', url: '/images/dzire.jpg' },
+      { label: 'Passenger Cabin', url: 'https://images.unsplash.com/photo-1541899481282-d53bffe3c35d?auto=format&fit=crop&w=1200&q=80' }
+    ],
     seating: '4 + 1 Chauffeur',
     luggage: '2 Large + 1 Small Bag',
     fuel: 'Petrol / CNG • AC',
@@ -75,10 +94,14 @@ export const ALL_FLEET_VEHICLES = [
   },
   {
     id: 'carens',
-    name: 'Kia Carens Prestige Plus (7-Seater)',
+    name: 'Kia Carens Prestige Plus',
     category: 'muv',
     categoryLabel: '7-Seater Luxury MUV',
     image: '/images/carens.jpg',
+    gallery: [
+      { label: 'Exterior', url: '/images/carens.jpg' },
+      { label: 'Luxury Interior', url: 'https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=1200&q=80' }
+    ],
     seating: '6/7 + 1 Chauffeur',
     luggage: '3 Large Bags',
     fuel: 'Diesel / Turbo Petrol',
@@ -98,6 +121,10 @@ export const ALL_FLEET_VEHICLES = [
     category: 'sedan',
     categoryLabel: '4-Seater Executive Sedan',
     image: '/images/aura.jpg',
+    gallery: [
+      { label: 'Exterior', url: '/images/aura.jpg' },
+      { label: 'Executive Cockpit', url: 'https://images.unsplash.com/photo-1552519507-da3b142c6e3d?auto=format&fit=crop&w=1200&q=80' }
+    ],
     seating: '4 + 1 Chauffeur',
     luggage: '2 Large Bags (402L Boot)',
     fuel: 'CNG / Petrol',
@@ -117,6 +144,10 @@ export const ALL_FLEET_VEHICLES = [
     category: 'sedan',
     categoryLabel: 'Tall-Boy Budget Cab',
     image: '/images/wagonr.jpg',
+    gallery: [
+      { label: 'Exterior', url: '/images/wagonr.jpg' },
+      { label: 'Spacious Cabin', url: 'https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?auto=format&fit=crop&w=1200&q=80' }
+    ],
     seating: '4 + 1 Chauffeur',
     luggage: '2 Medium Bags',
     fuel: 'CNG (High Mileage 34km/kg)',
@@ -136,6 +167,10 @@ export const ALL_FLEET_VEHICLES = [
     category: 'muv',
     categoryLabel: '7-Seater Legend MUV',
     image: '/images/old-innova.jpg',
+    gallery: [
+      { label: 'Exterior', url: '/images/old-innova.jpg' },
+      { label: 'Rear Cargo View', url: '/images/innova-crysta-2.jpg' }
+    ],
     seating: '7 + 1 Chauffeur',
     luggage: '4 Large Bags',
     fuel: 'Diesel D-4D Engine',
@@ -154,7 +189,11 @@ export const ALL_FLEET_VEHICLES = [
     name: 'Force Urbania Luxury Van (13-Seater)',
     category: 'van',
     categoryLabel: 'Luxury Group Traveler',
-    image: '/images/car-fleet-images.jpg',
+    image: 'https://images.unsplash.com/photo-1570125909232-eb263c188f7e?auto=format&fit=crop&w=1200&q=80',
+    gallery: [
+      { label: 'Luxury Coach View', url: 'https://images.unsplash.com/photo-1570125909232-eb263c188f7e?auto=format&fit=crop&w=1200&q=80' },
+      { label: 'Fleet Overview', url: '/images/car-fleet-images.jpg' }
+    ],
     seating: '12 + 1 Chauffeur',
     luggage: '10+ Bags Dedicated Boot',
     fuel: 'Diesel • High Roof AC',
@@ -177,10 +216,22 @@ export default function FleetGalleryModal({
   onSelectVehicle
 }) {
   const [currentIndex, setCurrentIndex] = useState(initialIndex);
+  const [activeAngleIndex, setActiveAngleIndex] = useState(0);
+  const [fitMode, setFitMode] = useState('contain'); // 'contain' (Whole car visible, no crop) | 'cover' (Fill frame)
+  const [isImageLoading, setIsImageLoading] = useState(true);
 
   useEffect(() => {
     setCurrentIndex(initialIndex);
+    setActiveAngleIndex(0);
+    setIsImageLoading(true);
   }, [initialIndex, isOpen]);
+
+  // Reset angle index and loading when switching vehicles
+  const handleSelectVehicleIndex = (idx) => {
+    setCurrentIndex(idx);
+    setActiveAngleIndex(0);
+    setIsImageLoading(true);
+  };
 
   // Keyboard navigation (Esc to close, Left/Right arrows to flip)
   useEffect(() => {
@@ -192,82 +243,150 @@ export default function FleetGalleryModal({
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isOpen, currentIndex]);
+  }, [isOpen, currentIndex, activeAngleIndex]);
 
   if (!isOpen) return null;
 
   const currentVehicle = ALL_FLEET_VEHICLES[currentIndex];
+  const photoGallery = currentVehicle.gallery && currentVehicle.gallery.length > 0
+    ? currentVehicle.gallery
+    : [{ label: 'Exterior', url: currentVehicle.image }];
+
+  const currentPhoto = photoGallery[activeAngleIndex] || photoGallery[0];
+  const currentPhotoUrl = currentPhoto.url || currentVehicle.image;
 
   const handleNext = () => {
-    setCurrentIndex((prev) => (prev + 1) % ALL_FLEET_VEHICLES.length);
+    const nextIdx = (currentIndex + 1) % ALL_FLEET_VEHICLES.length;
+    handleSelectVehicleIndex(nextIdx);
   };
 
   const handlePrev = () => {
-    setCurrentIndex((prev) => (prev - 1 + ALL_FLEET_VEHICLES.length) % ALL_FLEET_VEHICLES.length);
+    const prevIdx = (currentIndex - 1 + ALL_FLEET_VEHICLES.length) % ALL_FLEET_VEHICLES.length;
+    handleSelectVehicleIndex(prevIdx);
+  };
+
+  const toggleFitMode = () => {
+    setFitMode(prev => (prev === 'contain' ? 'cover' : 'contain'));
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-slate-950/85 backdrop-blur-md animate-fadeIn">
-      <div className="relative w-full max-w-4xl rounded-3xl bg-white border border-slate-200 shadow-2xl overflow-hidden flex flex-col max-h-[95vh]">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-2.5 sm:p-6 bg-slate-950/85 backdrop-blur-md animate-fadeIn">
+      <div className="relative w-full max-w-4xl rounded-3xl bg-white border border-slate-200 shadow-2xl overflow-hidden flex flex-col max-h-[96vh]">
         
         {/* Top Header Bar */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 bg-slate-50/80 backdrop-blur-md z-20">
+        <div className="flex items-center justify-between px-5 sm:px-6 py-3.5 border-b border-slate-100 bg-white/95 backdrop-blur-md z-20">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-brand-50 border border-brand-100 flex items-center justify-center text-brand-600">
+            <div className="w-9 h-9 rounded-xl bg-brand-50 border border-brand-100 flex items-center justify-center text-brand-600 shrink-0">
               <Car className="w-5 h-5" />
             </div>
             <div>
-              <h3 className="text-sm sm:text-base font-black text-slate-900 font-display">
-                Fleet Photo Gallery ({currentIndex + 1} of {ALL_FLEET_VEHICLES.length})
-              </h3>
+              <div className="flex items-center gap-2">
+                <h3 className="text-sm sm:text-base font-black text-slate-900 font-display">
+                  Fleet Showcase ({currentIndex + 1} of {ALL_FLEET_VEHICLES.length})
+                </h3>
+                <span className="hidden sm:inline-flex px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                  HD Verified
+                </span>
+              </div>
               <p className="text-[11px] text-slate-500 font-medium">
-                Verified photos uploaded by commercial fleet partners
+                Verified high-resolution photos of commercial fleet vehicles
               </p>
             </div>
           </div>
 
-          <button
-            onClick={onClose}
-            className="p-2 rounded-full hover:bg-slate-200 text-slate-500 hover:text-slate-900 transition-colors cursor-pointer"
-            title="Close Gallery"
-          >
-            <X className="w-5 h-5" />
-          </button>
+          <div className="flex items-center gap-2">
+            {/* Fit / Fill Mode Toggle Button */}
+            <button
+              onClick={toggleFitMode}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700 text-xs font-bold transition-all cursor-pointer shadow-2xs"
+              title={fitMode === 'contain' ? 'Switch to Fill/Zoom View' : 'Switch to Full Vehicle Fit (No Crop)'}
+            >
+              {fitMode === 'contain' ? (
+                <>
+                  <Maximize2 className="w-3.5 h-3.5 text-brand-600" />
+                  <span className="hidden sm:inline">Fit Whole Car</span>
+                  <span className="sm:hidden">Fit</span>
+                </>
+              ) : (
+                <>
+                  <Minimize2 className="w-3.5 h-3.5 text-adventure-600" />
+                  <span className="hidden sm:inline">Fill Window</span>
+                  <span className="sm:hidden">Fill</span>
+                </>
+              )}
+            </button>
+
+            <button
+              onClick={onClose}
+              className="p-2 rounded-full hover:bg-slate-100 text-slate-500 hover:text-slate-900 transition-colors cursor-pointer"
+              title="Close Gallery"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
         </div>
 
         {/* Main Photo & Details Viewer */}
         <div className="overflow-y-auto p-4 sm:p-6 space-y-5 flex-1">
           
-          {/* Main Large Image Box with Navigation Arrows */}
-          <div className="relative h-72 sm:h-96 w-full rounded-2xl overflow-hidden bg-slate-950 shadow-inner group">
+          {/* Main Photo Cinema Stage with Dual-Layer Studio Presentation */}
+          <div className="relative h-72 sm:h-96 w-full rounded-2xl overflow-hidden bg-slate-950 border border-slate-800 shadow-inner group flex items-center justify-center">
+            
+            {/* Layer 1: Ambient Blurred Backdrop to fill negative space smoothly */}
             <img
-              src={currentVehicle.image}
-              alt={currentVehicle.name}
-              className="w-full h-full object-cover transition-all duration-500"
+              src={currentPhotoUrl}
+              alt=""
+              className="absolute inset-0 w-full h-full object-cover blur-3xl opacity-35 scale-125 select-none pointer-events-none"
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-slate-950/20 to-transparent pointer-events-none" />
+            <div className="absolute inset-0 bg-radial from-transparent via-slate-950/60 to-slate-950/90 pointer-events-none" />
+
+            {/* Layer 2: Skeleton Loader while image is downloading */}
+            {isImageLoading && (
+              <div className="absolute inset-0 flex items-center justify-center bg-slate-900/80 backdrop-blur-xs z-10 animate-pulse">
+                <div className="flex flex-col items-center gap-2 text-slate-400">
+                  <Car className="w-8 h-8 animate-bounce text-brand-400" />
+                  <span className="text-xs font-semibold">Loading crystal-clear vehicle view...</span>
+                </div>
+              </div>
+            )}
+
+            {/* Layer 3: Foreground Main Vehicle Photo with Auto-Fit */}
+            <div className="relative z-10 w-full h-full flex items-center justify-center p-2 sm:p-4">
+              <img
+                key={`${currentVehicle.id}-${activeAngleIndex}-${fitMode}`}
+                src={currentPhotoUrl}
+                alt={`${currentVehicle.name} - ${currentPhoto.label}`}
+                onLoad={() => setIsImageLoading(false)}
+                onError={() => setIsImageLoading(false)}
+                className={`max-w-full max-h-full transition-all duration-300 ${
+                  fitMode === 'contain'
+                    ? 'object-contain drop-shadow-[0_20px_35px_rgba(0,0,0,0.85)]'
+                    : 'w-full h-full object-cover'
+                } ${isImageLoading ? 'opacity-0 scale-95' : 'opacity-100 scale-100'}`}
+              />
+            </div>
 
             {/* Left Prev Arrow Button */}
             <button
               onClick={handlePrev}
-              className="absolute left-3 top-1/2 -translate-y-1/2 p-3 rounded-full bg-slate-950/70 hover:bg-slate-950 text-white backdrop-blur-md shadow-lg transition-all cursor-pointer hover:scale-110 active:scale-95"
-              aria-label="Previous car image"
+              className="absolute left-3 top-1/2 -translate-y-1/2 z-20 p-2.5 sm:p-3 rounded-full bg-slate-950/75 hover:bg-slate-900 text-white backdrop-blur-md border border-white/10 shadow-xl transition-all cursor-pointer hover:scale-110 active:scale-95"
+              aria-label="Previous car model"
             >
-              <ChevronLeft className="w-6 h-6" />
+              <ChevronLeft className="w-5 h-5 sm:w-6 sm:h-6" />
             </button>
 
             {/* Right Next Arrow Button */}
             <button
               onClick={handleNext}
-              className="absolute right-3 top-1/2 -translate-y-1/2 p-3 rounded-full bg-slate-950/70 hover:bg-slate-950 text-white backdrop-blur-md shadow-lg transition-all cursor-pointer hover:scale-110 active:scale-95"
-              aria-label="Next car image"
+              className="absolute right-3 top-1/2 -translate-y-1/2 z-20 p-2.5 sm:p-3 rounded-full bg-slate-950/75 hover:bg-slate-900 text-white backdrop-blur-md border border-white/10 shadow-xl transition-all cursor-pointer hover:scale-110 active:scale-95"
+              aria-label="Next car model"
             >
-              <ChevronRight className="w-6 h-6" />
+              <ChevronRight className="w-5 h-5 sm:w-6 sm:h-6" />
             </button>
 
             {/* Top Badges Overlay */}
-            <div className="absolute top-4 left-4 flex flex-wrap items-center gap-2">
-              <span className="px-3 py-1 rounded-full bg-white/95 text-xs font-black text-slate-900 shadow-sm flex items-center gap-1.5">
+            <div className="absolute top-4 left-4 z-20 flex flex-wrap items-center gap-2 pointer-events-none">
+              <span className="px-3 py-1 rounded-full bg-white/95 text-xs font-black text-slate-900 shadow-sm flex items-center gap-1.5 backdrop-blur-xs">
                 <Car className="w-3.5 h-3.5 text-brand-600" />
                 <span>{currentVehicle.categoryLabel}</span>
               </span>
@@ -277,52 +396,97 @@ export default function FleetGalleryModal({
               </span>
             </div>
 
-            {/* Bottom Title & Specs on Photo */}
-            <div className="absolute bottom-4 left-4 right-4 text-white space-y-1">
+            {/* Interactive Framing Mode Badge (Clickable) */}
+            <div className="absolute top-4 right-4 z-20 hidden sm:flex items-center gap-1.5">
+              <button
+                onClick={toggleFitMode}
+                className="px-2.5 py-1 rounded-full bg-slate-950/70 hover:bg-slate-950 text-white text-[11px] font-bold border border-white/20 backdrop-blur-md transition-all flex items-center gap-1 cursor-pointer"
+              >
+                <SlidersHorizontal className="w-3 h-3 text-brand-400" />
+                <span>{fitMode === 'contain' ? 'Full View: No Crop' : 'Zoomed View'}</span>
+              </button>
+            </div>
+
+            {/* Bottom Multi-Angle Photo Switcher (Exterior, Cabin, Boot) */}
+            {photoGallery.length > 1 && (
+              <div className="absolute bottom-4 right-4 z-20 flex items-center gap-1.5 p-1 rounded-xl bg-slate-950/80 backdrop-blur-md border border-white/10 shadow-xl">
+                {photoGallery.map((photo, pIdx) => (
+                  <button
+                    key={pIdx}
+                    onClick={() => {
+                      setActiveAngleIndex(pIdx);
+                      setIsImageLoading(true);
+                    }}
+                    className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1 ${
+                      activeAngleIndex === pIdx
+                        ? 'bg-brand-500 text-white shadow-sm'
+                        : 'text-slate-300 hover:text-white hover:bg-white/10'
+                    }`}
+                  >
+                    <Camera className="w-3 h-3" />
+                    <span>{photo.label}</span>
+                  </button>
+                ))}
+              </div>
+            )}
+
+            {/* Bottom Vehicle Title & Rating on Stage */}
+            <div className="absolute bottom-4 left-4 z-20 text-white space-y-1 pointer-events-none">
               <div className="flex items-center gap-2">
                 <div className="flex items-center gap-1 px-2 py-0.5 rounded bg-amber-500 text-slate-950 text-xs font-black">
                   <Star className="w-3 h-3 fill-slate-950" />
                   <span>{currentVehicle.rating}</span>
                 </div>
-                <span className="text-xs text-slate-300 font-semibold">({currentVehicle.trips})</span>
+                <span className="text-xs text-slate-300 font-semibold drop-shadow-sm">({currentVehicle.trips})</span>
               </div>
-              <h2 className="text-2xl sm:text-3xl font-extrabold font-display tracking-tight text-white drop-shadow-md">
+              <h2 className="text-xl sm:text-3xl font-extrabold font-display tracking-tight text-white drop-shadow-md">
                 {currentVehicle.name}
               </h2>
             </div>
+
           </div>
 
           {/* Quick Thumbnails Selector Strip */}
           <div className="space-y-2">
-            <div className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
-              Browse Fleet Vehicles ({ALL_FLEET_VEHICLES.length} Models)
+            <div className="flex items-center justify-between text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+              <span>Select Vehicle Model ({ALL_FLEET_VEHICLES.length} Available)</span>
+              <span className="text-brand-600 font-bold capitalize">
+                Showing: {currentVehicle.name}
+              </span>
             </div>
-            <div className="flex items-center gap-2.5 overflow-x-auto pb-2 scrollbar-thin">
+            
+            <div className="flex items-center gap-3 overflow-x-auto pb-2 scrollbar-thin">
               {ALL_FLEET_VEHICLES.map((vehicle, idx) => (
                 <button
                   key={vehicle.id}
-                  onClick={() => setCurrentIndex(idx)}
-                  className={`relative shrink-0 w-24 sm:w-28 h-16 sm:h-20 rounded-xl overflow-hidden border-2 transition-all cursor-pointer ${
+                  onClick={() => handleSelectVehicleIndex(idx)}
+                  className={`group relative shrink-0 w-28 sm:w-32 rounded-2xl overflow-hidden border-2 transition-all cursor-pointer bg-slate-900 ${
                     idx === currentIndex
-                      ? 'border-brand-600 scale-105 shadow-md ring-2 ring-brand-500/20'
-                      : 'border-slate-200 opacity-70 hover:opacity-100 hover:border-slate-400'
+                      ? 'border-brand-500 scale-105 shadow-lg shadow-brand-500/20 ring-2 ring-brand-500/30'
+                      : 'border-slate-200 opacity-75 hover:opacity-100 hover:border-slate-400'
                   }`}
                 >
-                  <img
-                    src={vehicle.image}
-                    alt={vehicle.name}
-                    className="w-full h-full object-cover"
-                  />
-                  <div className="absolute inset-0 bg-slate-950/30" />
-                  <div className="absolute bottom-1 left-1 right-1 text-[9px] font-extrabold text-white truncate text-center drop-shadow-xs">
-                    {vehicle.name.split(' ')[1] || vehicle.name.split(' ')[0]}
+                  <div className="relative h-16 sm:h-20 w-full flex items-center justify-center p-1 bg-gradient-to-b from-slate-800 to-slate-950">
+                    <img
+                      src={vehicle.image}
+                      alt={vehicle.name}
+                      className="max-h-full max-w-full object-contain filter drop-shadow-md group-hover:scale-105 transition-transform"
+                    />
+                  </div>
+                  <div className="p-1.5 bg-white text-left">
+                    <div className="text-[10px] font-black text-slate-900 truncate">
+                      {vehicle.name.split(' ')[0]} {vehicle.name.split(' ')[1] || ''}
+                    </div>
+                    <div className="text-[9px] font-extrabold text-emerald-600">
+                      {vehicle.ratePerKm}
+                    </div>
                   </div>
                 </button>
               ))}
             </div>
           </div>
 
-          {/* Key Specs & Tariff Details */}
+          {/* Key Specs & Commercial Tariff Details */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
             <div className="p-3 rounded-2xl bg-slate-50 border border-slate-200 space-y-1">
               <div className="text-[10px] font-bold text-slate-400 uppercase flex items-center gap-1">
@@ -353,14 +517,14 @@ export default function FleetGalleryModal({
                 <ShieldCheck className="w-3.5 h-3.5 text-blue-600" />
                 <span>Commercial Tariff</span>
               </div>
-              <div className="text-xs font-black text-emerald-600">{currentVehicle.ratePerKm} (0% Markup)</div>
+              <div className="text-xs font-black text-emerald-600">{currentVehicle.ratePerKm} (0% Commission)</div>
             </div>
           </div>
 
           {/* Action Row */}
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-2 border-t border-slate-100">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-3 border-t border-slate-100">
             <div className="text-xs text-slate-600 font-medium">
-              Daily Rental: <strong className="text-slate-900 font-black">{currentVehicle.dailyRate}</strong> • Min: {currentVehicle.minKmPerDay}
+              Daily Outstation Rate: <strong className="text-slate-900 font-black">{currentVehicle.dailyRate}</strong> • Min: {currentVehicle.minKmPerDay}
             </div>
 
             <div className="flex items-center gap-3 w-full sm:w-auto">
@@ -378,7 +542,7 @@ export default function FleetGalleryModal({
                 }}
                 className="flex-1 sm:flex-initial py-3 px-6 rounded-2xl bg-slate-950 hover:bg-slate-850 text-white font-black text-xs shadow-lg transition-all cursor-pointer flex items-center justify-center gap-2 group"
               >
-                <span>Proceed with {currentVehicle.name.split(' ')[0]} {currentVehicle.name.split(' ')[1]}</span>
+                <span>Select {currentVehicle.name.split(' ')[0]} {currentVehicle.name.split(' ')[1] || ''}</span>
                 <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
               </button>
             </div>
